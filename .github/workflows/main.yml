@@ -16,6 +16,7 @@ jobs:
         ]
     env:
       PACMAN_OPTIONS: "--needed --noconfirm --noprogressbar --overwrite \\*"
+      MSYSTEM: ${{ matrix.MSYSTEM }}
     steps:
       - name: clone
         run: |
