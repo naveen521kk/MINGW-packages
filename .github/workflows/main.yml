@@ -40,6 +40,7 @@ jobs:
           C:\msys64\usr\bin\bash --login -c "pacman -U $(cygpath "C:\projects\inkscape")/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz %PACMAN_OPTIONS%"
           C:\msys64\usr\bin\pacman -Sy pacman %PACMAN_OPTIONS%
           C:\msys64\usr\bin\pacman -Syuu %PACMAN_OPTIONS%
+          C:\msys64\usr\bin\pacman -S mingw-w64-x86_64-libdeflate %PACMAN_OPTIONS%
           C:\msys64\usr\bin\bash --login -c "/c/projects/inkscape/buildtools/appveyor.sh"
       - uses: actions/upload-artifact@v2
         with:
