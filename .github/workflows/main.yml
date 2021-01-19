@@ -18,10 +18,10 @@ jobs:
       PACMAN_OPTIONS: "--needed --noconfirm --noprogressbar --overwrite \\*"
     steps:
       - name: clone
-        working-directory: C:\projects\inkscape
         run: |
           mkdir -p "C:\projects\inkscape"
           git clone -q --depth=100 --branch=win32-font https://gitlab.com/naveen521kk/inkscape.git C:\projects\inkscape
+          cd "C:\projects\inkscape"
           git checkout -qf ac3aba9dee3da8a02021f54cac2a907f585c918e
           git submodule update --init --recursive
       - name: build
