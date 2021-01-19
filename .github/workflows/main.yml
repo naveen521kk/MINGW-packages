@@ -25,11 +25,6 @@ jobs:
           cd "C:\projects\inkscape"
           git checkout -qf ac3aba9dee3da8a02021f54cac2a907f585c918e
           git submodule update --init --recursive
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: MSYS
-          install: git base-devel binutils mingw-w64-${{ matrix.arch }}-toolchain
-          update: true
       - name: build
         working-directory: C:\projects\inkscape
         env:
@@ -41,14 +36,11 @@ jobs:
           del C:\Windows\SysWOW64\libssl-*.dll C:\Windows\SysWOW64\libcrypto-*.dll
           del C:\Windows\SysWOW64\libssl-*.dll C:\Windows\SysWOW64\libcrypto-*.dll
           rmdir /S /Q "C:\Program Files\Git"
-      - name: CI-Build
-        shell: msys2 {0}
-        env:
-          APPVEYOR_BUILD_FOLDER: C:\projects\inkscape
-          MSYSTEM: ${{ matrix.MSYSTEM }}
-          PACMAN_OPTIONS: "--needed --noconfirm --noprogressbar --overwrite \\*"
-        run: |
-          source /c/projects/inkscape/buildtools/appveyor.sh
+          curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
+          C:\msys64\usr\bin\bash --login -c "pacman -U $(cygpath "C:\projects\inkscape")/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz %PACMAN_OPTIONS%"
+          C:\msys64\usr\bin\pacman -Sy pacman %PACMAN_OPTIONS%
+          C:\msys64\usr\bin\pacman -Syuu %PACMAN_OPTIONS%
+          C:\msys64\usr\bin\bash --login -c "/c/projects/inkscape/buildtools/appveyor.sh"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
