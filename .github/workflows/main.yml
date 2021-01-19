@@ -17,6 +17,45 @@ jobs:
       PACMAN_OPTIONS: "--needed --noconfirm --noprogressbar --overwrite \\*"
       MSYSTEM: ${{ matrix.MSYSTEM }}
     steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: false
+          install: >-
+            base-devel
+            intltool
+            git
+            mingw-w64-${{marix.arch}}-toolchain
+            mingw-w64-${{marix.arch}}-cmake
+            mingw-w64-${{marix.arch}}-ninja
+            mingw-w64-${{marix.arch}}-double-conversion
+            mingw-w64-${{marix.arch}}-gc
+            mingw-w64-${{marix.arch}}-gsl
+            mingw-w64-${{marix.arch}}-libxslt
+            mingw-w64-${{marix.arch}}-boost
+            mingw-w64-${{marix.arch}}-gtk3
+            mingw-w64-${{marix.arch}}-gtkmm3
+            mingw-w64-${{marix.arch}}-libsoup
+            mingw-w64-${{marix.arch}}-poppler
+            mingw-w64-${{marix.arch}}-potrace
+            mingw-w64-${{marix.arch}}-libvisio
+            mingw-w64-${{marix.arch}}-libwpg
+            mingw-w64-${{marix.arch}}-aspell
+            mingw-w64-${{marix.arch}}-aspell-en
+            mingw-w64-${{marix.arch}}-gspell
+            mingw-w64-${{marix.arch}}-python
+            mingw-w64-${{marix.arch}}-python-pip
+            mingw-w64-${{marix.arch}}-python-lxml
+            mingw-w64-${{marix.arch}}-python-numpy
+            mingw-w64-${{marix.arch}}-python-pillow
+            mingw-w64-${{marix.arch}}-python-six
+            mingw-w64-${{marix.arch}}-python-gobject
+            mingw-w64-${{marix.arch}}-python-pyserial
+            mingw-w64-${{marix.arch}}-python-coverage
+            mingw-w64-${{marix.arch}}-scour
+            mingw-w64-${{marix.arch}}-ccache
+            mingw-w64-${{marix.arch}}-gtest
+            mingw-w64-${{marix.arch}}-ntldd-git
+            mingw-w64-${{marix.arch}}-ghostscript
       - name: clone
         run: |
           mkdir -p "C:\projects\inkscape"
@@ -24,22 +63,45 @@ jobs:
           cd "C:\projects\inkscape"
           git checkout -qf ac3aba9dee3da8a02021f54cac2a907f585c918e
           git submodule update --init --recursive
-      - name: build
+      - name: check
         working-directory: C:\projects\inkscape
         env:
           CHERE_INVOKING : 'yes'
           APPVEYOR_BUILD_FOLDER: C:\projects\inkscape
         shell: cmd
         run: |
-          del C:\Windows\System32\libssl-*.dll C:\Windows\system32\libcrypto-*.dll
-          del C:\Windows\SysWOW64\libssl-*.dll C:\Windows\SysWOW64\libcrypto-*.dll
-          del C:\Windows\SysWOW64\libssl-*.dll C:\Windows\SysWOW64\libcrypto-*.dll
           rmdir /S /Q "C:\Program Files\Git"
-          curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
-          C:\msys64\usr\bin\bash --login -c "pacman -U $(cygpath "C:\projects\inkscape")/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz %PACMAN_OPTIONS%"
-          C:\msys64\usr\bin\pacman -Sy pacman %PACMAN_OPTIONS%
-          C:\msys64\usr\bin\pacman -Syuu %PACMAN_OPTIONS%
-          C:\msys64\usr\bin\bash --login -c "/c/projects/inkscape/buildtools/appveyor.sh"
+      - name: build
+        working-directory: C:\projects\inkscape
+        env:
+          CHERE_INVOKING : 'yes'
+        shell: msys2 {0}
+        run: |
+          mkdir build
+          cd build
+          export FONTCONFIG_FILE=$(cygpath -a fonts.conf)
+          cat > "$FONTCONFIG_FILE" <<EOF
+          <?xml version="1.0"?>
+          <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+          <fontconfig><dir>$(cygpath -aw fonts)</dir></fontconfig>
+          EOF
+          mkdir fonts
+          wget -nv https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2 \
+          && tar -xf dejavu-fonts-ttf-2.37.tar.bz2 --directory=fonts
+          message "--- Installing dependencies"
+          source ../buildtools/msys2installdeps.sh
+          message "--- Configuring the build"
+          cmake .. -G Ninja \
+              -DCMAKE_C_COMPILER_LAUNCHER="ccache" \
+              -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" \
+              -DCMAKE_INSTALL_MESSAGE="NEVER" \
+              || error "cmake failed"
+          message "--- Compiling Inkscape"
+          ninja || error "compilation failed"
+          message "--- Installing the project"
+          ninja install || error "installation failed"
+          ninja dist-win-7z-fast
+
       - uses: actions/upload-artifact@v2
         with:
           name: my-artifact
