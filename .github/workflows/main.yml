@@ -47,7 +47,6 @@ jobs:
           APPVEYOR_BUILD_FOLDER: C:\projects\inkscape
           MSYSTEM: ${{ matrix.MSYSTEM }}
           PACMAN_OPTIONS: "--needed --noconfirm --noprogressbar --overwrite \\*"
-        shell: cmd
         run: |
           source /c/projects/inkscape/buildtools/appveyor.sh
       - name: Create Release
