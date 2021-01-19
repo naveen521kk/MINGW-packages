@@ -28,6 +28,7 @@ jobs:
         working-directory: C:\projects\inkscape
         env:
           CHERE_INVOKING : 'yes'
+          APPVEYOR_BUILD_FOLDER: C:\projects\inkscape
         shell: cmd
         run: |
           del C:\Windows\System32\libssl-*.dll C:\Windows\system32\libcrypto-*.dll
