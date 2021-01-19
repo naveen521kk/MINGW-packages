@@ -40,6 +40,12 @@ jobs:
           C:\msys64\usr\bin\pacman -Sy pacman %PACMAN_OPTIONS%
           C:\msys64\usr\bin\pacman -Syuu %PACMAN_OPTIONS%
           C:\msys64\usr\bin\bash --login -c "/c/projects/inkscape/buildtools/appveyor.sh"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact
+          path: |
+            C:\projects\inkscape\build\inkscape*.7z
+            C:\projects\inkscape\build\inkscape*.*
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
