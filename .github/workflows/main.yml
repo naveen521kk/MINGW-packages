@@ -24,6 +24,7 @@ jobs:
             base-devel
             intltool
             git
+            tar
             mingw-w64-${{matrix.arch}}-toolchain
             mingw-w64-${{matrix.arch}}-cmake
             mingw-w64-${{matrix.arch}}-ninja
@@ -59,7 +60,7 @@ jobs:
       - name: clone
         run: |
           mkdir -p "C:\projects\inkscape"
-          git clone -q --depth=100 --branch=win32-font https://gitlab.com/naveen521kk/inkscape.git C:\projects\inkscape
+          git clone -q --depth=100 --branch=win32-fix https://gitlab.com/naveen521kk/inkscape.git C:\projects\inkscape
           cd "C:\projects\inkscape"
           git checkout -qf ac3aba9dee3da8a02021f54cac2a907f585c918e
           git submodule update --init --recursive
@@ -86,19 +87,16 @@ jobs:
           <fontconfig><dir>$(cygpath -aw fonts)</dir></fontconfig>
           EOF
           mkdir fonts
-          wget -nv https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2 \
-          && tar -xf dejavu-fonts-ttf-2.37.tar.bz2 --directory=fonts
-          message "--- Installing dependencies"
-          source ../buildtools/msys2installdeps.sh
-          message "--- Configuring the build"
-          cmake .. -G Ninja \
-              -DCMAKE_C_COMPILER_LAUNCHER="ccache" \
-              -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" \
-              -DCMAKE_INSTALL_MESSAGE="NEVER" \
-              || error "cmake failed"
-          message "--- Compiling Inkscape"
+          wget -nv https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2 && tar -xf dejavu-fonts-ttf-2.37.tar.bz2 --directory=fonts
+          echo "--- Installing dependencies"
+          wget -nv https://gitlab.com/ede123/bintray/-/raw/master/mingw-w64-${{matrix.arch}}-imagemagick-6.9.10.69-1-any.pkg.tar.xz
+          pacman -U $PACMAN_OPTIONS mingw-w64-${{matrix.arch}}-imagemagick-6.9.10.69-1-any.pkg.tar.xz
+          rm  mingw-w64-${{matrix.arch}}-imagemagick-6.9.10.69-1-any.pkg.tar.xz
+          echo "--- Configuring the build"
+          cmake .. -G Ninja -DCMAKE_INSTALL_MESSAGE="NEVER" || error "cmake failed"
+          echo "--- Compiling Inkscape"
           ninja || error "compilation failed"
-          message "--- Installing the project"
+          echo "--- Installing the project"
           ninja install || error "installation failed"
           ninja dist-win-7z-fast
 
@@ -108,6 +106,14 @@ jobs:
           path: |
             C:\projects\inkscape\build\inkscape*.7z
             C:\projects\inkscape\build\inkscape*.*
+      - name: check
+        working-directory: C:\projects\inkscape
+        env:
+          CHERE_INVOKING : 'yes'
+          APPVEYOR_BUILD_FOLDER: C:\projects\inkscape
+        shell: pwsh
+        run: |
+          Move-Item C:\projects\inkscape\build\inkscape*.7z C:\projects\inkscape\build\inkscape.7z -Force
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -125,6 +131,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: C:\projects\inkscape\build\inkscape*.7z
+          asset_path: C:\projects\inkscape\build\inkscape.7z
           asset_name: inkscape.7z
           asset_content_type: application/zip
