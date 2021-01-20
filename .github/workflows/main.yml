@@ -9,10 +9,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: [
-          { MSYSTEM: MINGW64, arch: x86_64 },
-          { MSYSTEM: MINGW32, arch: i686   }
-        ]
+        MSYSTEM: [MINGW64, MINGW32]
+        arch: [x86_64, i686]
+        exclude:
+          - MSYSTEM: MINGW64
+            arch: i686
+          - MSYSTEM: MINGW32
+            arch: x86_64
     env:
       PACMAN_OPTIONS: "--needed --noconfirm --noprogressbar --overwrite \\*"
       MSYSTEM: ${{ matrix.MSYSTEM }}
