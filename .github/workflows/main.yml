@@ -64,7 +64,7 @@ jobs:
       - name: clone
         run: |
           mkdir -p "C:\projects\inkscape"
-          git clone -q --depth=100 --branch=master https://gitlab.com/naveen521kk/inkscape.git C:\projects\inkscape
+          git clone -q --depth=100 --branch=win32-fix https://gitlab.com/naveen521kk/inkscape.git C:\projects\inkscape
           cd "C:\projects\inkscape"
           git checkout -qf ac3aba9dee3da8a02021f54cac2a907f585c918e
           git submodule update --init --recursive
