@@ -63,7 +63,6 @@ jobs:
             mingw-w64-${{matrix.arch}}-ghostscript
       - name: clone
         run: |
-          mkdir -p "C:\projects\inkscape"
           git clone -q --depth=100 https://gitlab.com/inkscape/inkscape.git .
           git checkout -qf ac3aba9dee3da8a02021f54cac2a907f585c918e
           git submodule update --init --recursive
@@ -88,6 +87,7 @@ jobs:
           cmake .. -G Ninja -DCMAKE_INSTALL_MESSAGE="NEVER" || error "cmake failed"
       - name: build
         shell: msys2 {0}
+        working-directory: build
         run: |
           echo "--- Compiling Inkscape"
           ninja || error "compilation failed"
