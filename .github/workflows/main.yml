@@ -99,6 +99,6 @@ jobs:
         with:
           name: inkscape-windows
           path: |
-           inkscape*.7z
-           inkscape*.*
+           build/inkscape*.7z
+           build/inkscape*.*
 
