@@ -71,7 +71,7 @@ jobs:
         with:
           path: |
             build/
-          key: ${{ runner.os }}
+          key: ${{ runner.os }}-${{matrix.arch}}
       - name: prepare
         if: steps.cache-primes.outputs.cache-hit != 'true'
         shell: msys2 {0}
