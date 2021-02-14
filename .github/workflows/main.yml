@@ -87,11 +87,18 @@ jobs:
           EOF
           mkdir fonts
           wget -nv https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2 && tar -xf dejavu-fonts-ttf-2.37.tar.bz2 --directory=fonts
+      - name: Prepare
+        shell: msys2 {0}
+        run: |
           echo "--- Installing dependencies"
           wget -nv https://gitlab.com/ede123/bintray/-/raw/master/mingw-w64-${{matrix.arch}}-imagemagick-6.9.10.69-1-any.pkg.tar.xz
           pacman -U $PACMAN_OPTIONS mingw-w64-${{matrix.arch}}-imagemagick-6.9.10.69-1-any.pkg.tar.xz
           rm  mingw-w64-${{matrix.arch}}-imagemagick-6.9.10.69-1-any.pkg.tar.xz
           echo "--- Configuring the build"
+      - name: Cmake Prepare
+        shell: msys2 {0}
+        if: steps.cache-primes.outputs.cache-hit != 'true'
+        run: |
           cmake .. -G Ninja -DCMAKE_INSTALL_MESSAGE="NEVER" || error "cmake failed"
       - name: build
         shell: msys2 {0}
