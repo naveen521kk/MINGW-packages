@@ -64,8 +64,7 @@ jobs:
             mingw-w64-${{matrix.arch}}-ghostscript
       - name: clone
         run: |
-          git clone -q --depth=100 https://gitlab.com/naveen521kk/inkscape.git .
-          git checkout -qf fix-fontmap
+          git clone -q --depth=100 https://gitlab.com/naveen521kk/inkscape.git . --branch fix-fontmap
           git submodule update --init --recursive
       - name: Cache
         uses: actions/cache@v2
@@ -90,6 +89,7 @@ jobs:
       - name: Prepare
         shell: msys2 {0}
         run: |
+          cd build
           echo "--- Installing dependencies"
           wget -nv https://gitlab.com/ede123/bintray/-/raw/master/mingw-w64-${{matrix.arch}}-imagemagick-6.9.10.69-1-any.pkg.tar.xz
           pacman -U $PACMAN_OPTIONS mingw-w64-${{matrix.arch}}-imagemagick-6.9.10.69-1-any.pkg.tar.xz
@@ -99,6 +99,7 @@ jobs:
         shell: msys2 {0}
         if: steps.cache-primes.outputs.cache-hit != 'true'
         run: |
+          cd build
           cmake .. -G Ninja -DCMAKE_INSTALL_MESSAGE="NEVER" || error "cmake failed"
       - name: build
         shell: msys2 {0}
