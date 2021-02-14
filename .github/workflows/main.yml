@@ -64,8 +64,8 @@ jobs:
             mingw-w64-${{matrix.arch}}-ghostscript
       - name: clone
         run: |
-          git clone -q --depth=100 https://gitlab.com/inkscape/inkscape.git .
-          git checkout -qf ac3aba9dee3da8a02021f54cac2a907f585c918e
+          git clone -q --depth=100 https://gitlab.com/naveen521kk/inkscape.git .
+          git checkout -qf 730ea274fa60980a4ca0c32005164b185c43535b
           git submodule update --init --recursive
       - name: prepare
         shell: msys2 {0}
