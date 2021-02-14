@@ -76,7 +76,7 @@ jobs:
         if: steps.cache-primes.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: |
-          mkdir build
+          mkdir -p build
           cd build
           export FONTCONFIG_FILE=$(cygpath -a fonts.conf)
           cat > "$FONTCONFIG_FILE" <<EOF
