@@ -65,9 +65,16 @@ jobs:
       - name: clone
         run: |
           git clone -q --depth=100 https://gitlab.com/naveen521kk/inkscape.git .
-          git checkout -qf 730ea274fa60980a4ca0c32005164b185c43535b
+          git checkout -qf fix-fontmap
           git submodule update --init --recursive
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            build/
+          key: ${{ runner.os }}
       - name: prepare
+        if: steps.cache-primes.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: |
           mkdir build
