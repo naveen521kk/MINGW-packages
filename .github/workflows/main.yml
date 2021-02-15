@@ -64,7 +64,7 @@ jobs:
             mingw-w64-${{matrix.arch}}-ghostscript
       - name: clone
         run: |
-          git clone -q --depth=100 https://gitlab.com/naveen521kk/inkscape.git . --branch force-fc
+          git clone -q --depth=100 https://gitlab.com/naveen521kk/inkscape.git . --branch fix-fontmap
           git submodule update --init --recursive
       - name: prepare
         shell: msys2 {0}
