@@ -40,7 +40,6 @@ prepare() {
 # separate copies for asiodir in the shared and static build.
 
 build() {
-  export lt_cv_deplibs_check_method='pass_all'
 
   [[ -d "build-cpp-bindings-${MINGW_CHOST}" ]] && rm -rf "build-cpp-bindings-${MINGW_CHOST}"
   mkdir -p "${srcdir}/build-cpp-bindings-${MINGW_CHOST}"
@@ -50,6 +49,7 @@ build() {
     --enable-cxx
   make
 
+  export lt_cv_deplibs_check_method='pass_all'
   [[ -d "build-static-${MINGW_CHOST}" ]] && rm -rf "build-static-${MINGW_CHOST}"
   mkdir -p "${srcdir}/build-static-${MINGW_CHOST}"
   cd "${srcdir}/build-static-${MINGW_CHOST}"
