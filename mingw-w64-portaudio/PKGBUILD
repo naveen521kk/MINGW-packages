@@ -45,7 +45,7 @@ build() {
   [[ -d "build-cpp-bindings-${MINGW_CHOST}" ]] && rm -rf "build-cpp-bindings-${MINGW_CHOST}"
   mkdir -p "${srcdir}/build-cpp-bindings-${MINGW_CHOST}"
   cd "${srcdir}/build-cpp-bindings-${MINGW_CHOST}"
-  ../${srcdir}/${_realname}-backup/configure \
+  ../${_realname}-backup/configure \
     --prefix=${MINGW_PREFIX} \
     --enable-cxx
   make
