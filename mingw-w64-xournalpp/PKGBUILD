@@ -13,7 +13,8 @@ depends=("${MINGW_PACKAGE_PREFIX}-poppler"
          "${MINGW_PACKAGE_PREFIX}-gtk3"
          "${MINGW_PACKAGE_PREFIX}-libsndfile"
          "${MINGW_PACKAGE_PREFIX}-libzip"
-         "${MINGW_PACKAGE_PREFIX}-lua")
+         "${MINGW_PACKAGE_PREFIX}-lua"
+         "${MINGW_PACKAGE_PREFIX}-portaudio")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-imagemagick"
