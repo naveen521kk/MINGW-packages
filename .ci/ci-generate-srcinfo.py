@@ -28,6 +28,7 @@ import shutil
 from collections import OrderedDict
 import hashlib
 import time
+import shlex
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
@@ -49,6 +50,23 @@ def normalize_path(path: str) -> str:
     return path.replace("\\", "/")
 
 
+def check_output_retry(*args, **kwargs):
+    # XXX: git sometimes crashes when called concurrently,
+    # so we retry a few times..
+    run = 0
+    max_ = 5
+    while True:
+        try:
+            return subprocess.check_output(*args, **kwargs)
+        except subprocess.CalledProcessError as e:
+            if run <= max_ and e.returncode == 127:
+                time.sleep(0.1 * run)
+                run += 1
+                continue
+            else:
+                raise
+
+
 def get_cache_key(pkgbuild_path: str) -> str:
     pkgbuild_path = os.path.abspath(pkgbuild_path)
     git_cwd = os.path.dirname(pkgbuild_path)
@@ -58,18 +76,33 @@ def get_cache_key(pkgbuild_path: str) -> str:
     with open(pkgbuild_path, "rb") as f:
         h.update(f.read())
 
-    fileinfo = subprocess.check_output(
+    fileinfo = check_output_retry(
         ["git", "ls-files", "-s", "--full-name", git_path],
         cwd=git_cwd).decode("utf-8").strip()
     h.update(normalize_path(fileinfo).encode("utf-8"))
 
-    repo = subprocess.check_output(
+    repo = check_output_retry(
         ["git", "ls-remote", "--get-url", "origin"],
         cwd=git_cwd).decode("utf-8").strip()
     repo = normalize_repo(repo)
     h.update(repo.encode("utf-8"))
 
     return h.hexdigest()
+
+
+def get_mingw_arch_list(pkgbuild_path: str) -> List[str]:
+    bash = shutil.which("bash")
+    assert bash is not None
+    sub_commands = [
+        shlex.join(['source', pkgbuild_path]),
+        'echo -n "${mingw_arch[@]}"'
+    ]
+    out = subprocess.check_output([bash, '-c', ';'.join(sub_commands)], universal_newlines=True)
+    arch_list = out.strip().split()
+    if not arch_list:
+        arch_list = ["mingw32", "mingw64", "ucrt64"]
+    assert arch_list
+    return arch_list
 
 
 def get_srcinfo_for_pkgbuild(args: Tuple[str, str]) -> Optional[CacheTuple]:
@@ -89,9 +122,9 @@ def get_srcinfo_for_pkgbuild(args: Tuple[str, str]) -> Optional[CacheTuple]:
         srcinfos = {}
 
         if mode == "mingw":
-            for name in ["mingw32", "mingw64"]:
+            for name in get_mingw_arch_list(pkgbuild_path):
                 env = os.environ.copy()
-                env["MINGW_INSTALLS"] = name
+                env["MINGW_ARCH"] = name
                 srcinfos[name] = subprocess.check_output(
                     [bash, "/usr/bin/makepkg-mingw",
                     "--printsrcinfo", "-p", git_path],
@@ -103,17 +136,17 @@ def get_srcinfo_for_pkgbuild(args: Tuple[str, str]) -> Optional[CacheTuple]:
                 "--printsrcinfo", "-p", git_path],
                 cwd=git_cwd).decode("utf-8")
 
-        repo = subprocess.check_output(
+        repo = check_output_retry(
             ["git", "ls-remote", "--get-url", "origin"],
             cwd=git_cwd).decode("utf-8").strip()
         repo = normalize_repo(repo)
 
-        relpath = subprocess.check_output(
+        relpath = check_output_retry(
             ["git", "ls-files", "--full-name", git_path],
             cwd=git_cwd).decode("utf-8").strip()
         relpath = normalize_path(os.path.dirname(relpath))
 
-        date = subprocess.check_output(
+        date = check_output_retry(
             ["git", "log", "-1", "--format=%aI", git_path],
             cwd=git_cwd).decode("utf-8").strip()
 

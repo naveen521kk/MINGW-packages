@@ -1,26 +1,35 @@
 _realname=yosys
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=0.9.r10463.da1d06d78
+pkgver=0.9.r10702.0ccc7229c
 pkgrel=1
 pkgdesc="A framework for RTL synthesis tools (mingw-w64)"
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
 license=("ISC")
 url="http://www.clifford.at/yosys/"
 groups=("${MINGW_PACKAGE_PREFIX}-eda")
-depends=("${MINGW_PACKAGE_PREFIX}-ghdl"
-         "${MINGW_PACKAGE_PREFIX}-python")
+depends=(
+  "${MINGW_PACKAGE_PREFIX}-ghdl"
+  "${MINGW_PACKAGE_PREFIX}-python"
+)
 checkdepends=("${MINGW_PACKAGE_PREFIX}-iverilog")
-makedepends=('flex'
-             'git'
-             "${MINGW_PACKAGE_PREFIX}-ghdl"
-             "${MINGW_PACKAGE_PREFIX}-python")
+makedepends=(
+  'flex'
+  'git'
+  "${MINGW_PACKAGE_PREFIX}-ghdl"
+  "${MINGW_PACKAGE_PREFIX}-python"
+)
 
-_commit='da1d06d7'
-source=("${_realname}::git://github.com/YosysHQ/${_realname}.git#commit=${_commit}"
-        "ghdl-yosys-plugin::git://github.com/ghdl/ghdl-yosys-plugin.git#commit=6671d04")
-sha256sums=('SKIP'
-            'SKIP')
+_commit='0ccc7229'
+source=(
+  "${_realname}::git://github.com/YosysHQ/${_realname}.git#commit=${_commit}"
+  "ghdl-yosys-plugin::git://github.com/ghdl/ghdl-yosys-plugin.git#commit=98f4594b"
+)
+sha256sums=(
+  'SKIP'
+  'SKIP'
+)
 
 pkgver() {
   cd "${_realname}"
@@ -40,7 +49,7 @@ build() {
 
   mv "${srcdir}/ghdl-yosys-plugin"/src frontends/ghdl
   echo "ENABLE_GHDL=1" >> Makefile.conf
-  echo "GHDL_DIR=${MINGW_PREFIX}" >> Makefile.conf
+  echo "GHDL_PREFIX=${MINGW_PREFIX}" >> Makefile.conf
 
   make \
     GIT_REV="${_commit}" \

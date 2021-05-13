@@ -3,10 +3,11 @@
 _realname=zstandard
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.14.1
+pkgver=0.15.2
 pkgrel=1
 pkgdesc='Python bindings to the Zstandard (zstd) compression library (mingw-w64)'
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
 url="https://github.com/indygreg/python-zstandard"
 license=('BSD')
 depends=("${MINGW_PACKAGE_PREFIX}-python")
@@ -15,7 +16,7 @@ checkdepends=("${MINGW_PACKAGE_PREFIX}-python-hypothesis")
 optdepends=("${MINGW_PACKAGE_PREFIX}-python-cffi")
 options=('!emptydirs')
 source=("https://github.com/indygreg/python-zstandard/archive/$pkgver.tar.gz")
-sha256sums=('15d3b92e1b5aad5af7b93830825291821831baa6a2a0bf1b389b6171d4f8114f')
+sha256sums=('5f947c9b0a2e5b3831bff2e7132cfbd7cc22ea8a400da2304e0c089d5c22a876')
 
 prepare() {  
   cd "$srcdir"

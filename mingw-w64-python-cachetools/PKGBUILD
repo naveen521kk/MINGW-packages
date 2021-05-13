@@ -3,17 +3,18 @@
 _realname=cachetools
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=4.2.0
+pkgver=4.2.2
 pkgrel=1
 pkgdesc='Extensible memoizing collections and decorators (mingw-w64)'
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
 url="https://github.com/tkem/cachetools"
 license=('MIT')
 depends=("${MINGW_PACKAGE_PREFIX}-python")
 makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools")
 checkdepends=("${MINGW_PACKAGE_PREFIX}-python-pytest-runner")
 source=("${_realname}-$pkgver.tar.gz::https://github.com/tkem/cachetools/archive/v$pkgver.tar.gz")
-sha256sums=('697b5040b30c5dbd403410bd9a15c66672f84761acea4d333853f334c6193291')
+sha256sums=('d9b4bb657c8f90e847af6d08bc1d9aa6e365605fe202412098d4ca895db09b0f')
 
 prepare() {  
   cd "$srcdir"

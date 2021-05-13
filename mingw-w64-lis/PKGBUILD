@@ -3,10 +3,11 @@
 _realname=lis
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=2.0.29
-pkgrel=1
+pkgver=2.0.30
+pkgrel=2
 pkgdesc='Library of Iterative Solvers for linear systems (mingw-w64)'
 arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
 depends=("${MINGW_PACKAGE_PREFIX}-libtool"
          "${MINGW_PACKAGE_PREFIX}-msmpi")
 makedepends=("${MINGW_PACKAGE_PREFIX}-msmpi")
@@ -14,7 +15,7 @@ options=('!docs')
 license=('BSD')
 url='https://www.ssisc.org/lis/'
 source=(https://www.ssisc.org/lis/dl/${_realname}-${pkgver}.zip)
-sha256sums=('AECF08F79595B3F1A888F153615F099FC2FCF6B90955FFBABA9CD01892D9614D')
+sha256sums=('fefe1ba48aa5867cde3c07ea4009fb333baa863b535a1f29bbdf99de42f49f67')
 
 prepare() {
   cd ${_realname}-${pkgver}
