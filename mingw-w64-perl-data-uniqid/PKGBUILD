@@ -1,0 +1,38 @@
+# Maintainer: @naveen521kk on Github, Naveen M K <naveen@syrusdark.website>
+
+_realname=data-uniqid
+_dist=Data-Uniqid
+pkgbase=mingw-w64-perl-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-perl-${_realname}")
+pkgver=0.12
+pkgrel=1
+pkgdesc="Perl extension for simple genrating of unique id's (mingw-w64)"
+arch=('any')
+url="https://metacpan.org/release/${_realname}"
+groups=("${MINGW_PACKAGE_PREFIX}-perl-modules")
+depends=(
+  "${MINGW_PACKAGE_PREFIX}-perl"
+
+)
+options=('!emptydirs')
+makedepends=("${MINGW_PACKAGE_PREFIX}-python")
+license=('unknown')
+source=(
+  "https://cpan.metacpan.org/authors/id/M/MW/MWX/${_dist}-${pkgver}.tar.gz"
+  "patchmakefile.py"
+)
+sha512sums=('fd12aae4a810fda88dd0f8296e73760d8d62357cb5ebc675a4b2804d9eee93ebfa01942c7057ad9092e80331504f2a38a3c8a576ccb630de10f5e563752ed6e3'
+            'd7ec5ba4a3d75f674f4028e8a53bc4177ab71a379bc63affebf910e1d5a0e491b6642318218b55ddc4d90e0125d61e4b97626782af57d44522bcb5543fb21cb2')
+
+build() {
+  cd "$srcdir/${_realname}-${pkgver}"
+  PERL_MM_USE_DEFAULT=1 perl Makefile.PL
+  export pkgdir=$pkgdir
+  python $srcdir/patchmakefile.py
+  mingw32-make
+}
+
+package() {
+  cd "$srcdir/${_realname}-${pkgver}"
+  mingw32-make DESTDIR="${pkgdir}/" install
+}

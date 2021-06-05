@@ -1,0 +1,42 @@
+# Maintainer: @naveen521kk on Github, Naveen M K <naveen@syrusdark.website>
+
+_realname=data-dump
+_dist=Data-Dump
+pkgbase=mingw-w64-perl-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-perl-${_realname}")
+pkgver=1.23
+pkgrel=1
+pkgdesc="Pretty printing of data structures (mingw-w64)"
+arch=('any')
+url="https://metacpan.org/release/${_realname}"
+groups=("${MINGW_PACKAGE_PREFIX}-perl-modules")
+depends=(
+  "${MINGW_PACKAGE_PREFIX}-perl"
+
+  "${MINGW_PACKAGE_PREFIX}-perl-mime-base64"
+
+  "${MINGW_PACKAGE_PREFIX}-perl-symbol"
+
+)
+options=('!emptydirs')
+makedepends=("${MINGW_PACKAGE_PREFIX}-python")
+license=('perl_5')
+source=(
+  "https://cpan.metacpan.org/authors/id/G/GA/GAAS/${_dist}-${pkgver}.tar.gz"
+  "patchmakefile.py"
+)
+sha512sums=('6fd6c23bb6df7f7396219149dbfd23132fc2ea1dd344c32f62fc27a1afeeb28d7ebf2d429184bb6d1189f412e218f9e62a966b49fdd9ad5564e5152d67a02b96'
+            'd7ec5ba4a3d75f674f4028e8a53bc4177ab71a379bc63affebf910e1d5a0e491b6642318218b55ddc4d90e0125d61e4b97626782af57d44522bcb5543fb21cb2')
+
+build() {
+  cd "$srcdir/${_realname}-${pkgver}"
+  PERL_MM_USE_DEFAULT=1 perl Makefile.PL
+  export pkgdir=$pkgdir
+  python $srcdir/patchmakefile.py
+  mingw32-make
+}
+
+package() {
+  cd "$srcdir/${_realname}-${pkgver}"
+  mingw32-make DESTDIR="${pkgdir}/" install
+}
