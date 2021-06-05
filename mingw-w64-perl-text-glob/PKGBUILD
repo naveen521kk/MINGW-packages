@@ -1,29 +1,31 @@
 # Maintainer: @naveen521kk on Github, Naveen M K <naveen@syrusdark.website>
 
-_realname=autovivification
-_dist=autovivification
+_realname=text-glob
+_dist=Text-Glob
 pkgbase=mingw-w64-perl-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-perl-${_realname}")
-pkgver=0.18
+pkgver=0.11
 pkgrel=1
-pkgdesc="Lexically disable autovivification. (mingw-w64)"
+pkgdesc="match globbing patterns against text (mingw-w64)"
 arch=('any')
 url="https://metacpan.org/release/${_realname}"
 groups=("${MINGW_PACKAGE_PREFIX}-perl-modules")
 depends=(
   "${MINGW_PACKAGE_PREFIX}-perl"
 
-  "${MINGW_PACKAGE_PREFIX}-perl-xsloader"
+  "${MINGW_PACKAGE_PREFIX}-perl-constant"
+
+  "${MINGW_PACKAGE_PREFIX}-perl-exporter"
 
 )
 options=('!emptydirs')
 makedepends=("${MINGW_PACKAGE_PREFIX}-python")
 license=('perl_5')
 source=(
-  "https://cpan.metacpan.org/authors/id/V/VP/VPIT/${_dist}-${pkgver}.tar.gz"
+  "https://cpan.metacpan.org/authors/id/R/RC/RCLAMP/${_dist}-${pkgver}.tar.gz"
   "patchmakefile.py"
 )
-sha512sums=('f5058bf1672a53281d70431cbb2bdd1a37dda8dc3d4191ca3c68c469089c5a1f2a36522f2a0b5d19847d91296f43e49cf6296c87b78940e786f0d0ac106a539e'
+sha512sums=('20322fee3f56ee7e65f0f8e5371d9dbbe89895d8b9c9207486e7934e29bd883fb557c9765e406f85f56b67019293d82a0318ded83a9387b164cb5e8f58bef0cb'
             'd7ec5ba4a3d75f674f4028e8a53bc4177ab71a379bc63affebf910e1d5a0e491b6642318218b55ddc4d90e0125d61e4b97626782af57d44522bcb5543fb21cb2')
 
 build() {
