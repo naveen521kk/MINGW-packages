@@ -1,0 +1,44 @@
+# Maintainer: Naveen M K <naveen@syrusdark.website>
+
+_pyname=furo
+_realname=sphinx-furo
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+pkgver=2021.6.24b37
+pkgrel=1
+pkgdesc='A clean customisable Sphinx documentation theme. (mingw-w64)'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+url="https://pypi.org/project/furo/"
+license=('MIT')
+depends=(
+  "${MINGW_PACKAGE_PREFIX}-python"
+  "${MINGW_PACKAGE_PREFIX}-python-sphinx"
+  "${MINGW_PACKAGE_PREFIX}-python-beautifulsoup4"
+)
+makedepends=(
+  "${MINGW_PACKAGE_PREFIX}-python-setuptools" 
+)
+source=("${_pyname}-${pkgver}.tar.gz::https://pypi.org/packages/source/${_pyname::1}/${_pyname}/${_pyname}-${pkgver}.tar.gz")
+sha256sums=('c91be58dc4408f8d4fbd58c37d4fd1e541684a09d159bda8c7905d9f494b28de')
+
+prepare() {  
+  cd "$srcdir"
+  rm -rf python-build-${CARCH} | true
+  cp -r "${_pyname//_/-}-$pkgver" "python-build-${CARCH}"
+  export SETUPTOOLS_SCM_PRETEND_VERSION=${pkgver}
+}
+
+build() {
+  msg "Python build for ${CARCH}"  
+  cd "${srcdir}/python-build-${CARCH}"
+  ${MINGW_PREFIX}/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build-${CARCH}"
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MINGW_PREFIX}/bin/python setup.py install --prefix=${MINGW_PREFIX} \
+    --root="${pkgdir}" --optimize=1 --skip-build
+  install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
