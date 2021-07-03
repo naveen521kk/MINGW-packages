@@ -1,4 +1,4 @@
-# Maintainer: @naveen521kk on Github, Naveen M K <naveen@syrusdark.website>
+# Maintainer: @naveen521kk on Github, Naveen M K <naveen521kk@gmail.com>
 
 _realname=manim
 pkgbase=mingw-w64-${_realname}
@@ -12,7 +12,7 @@ url='https://www.manim.community'
 license=('MIT' 'custom')
 depends=(
   "${MINGW_PACKAGE_PREFIX}-python"
-  "${MINGW_PACKAGE_PREFIX}-ffmpeg"  
+  "${MINGW_PACKAGE_PREFIX}-ffmpeg"
   "${MINGW_PACKAGE_PREFIX}-python-click"
   "${MINGW_PACKAGE_PREFIX}-python-click-default-group"
   "${MINGW_PACKAGE_PREFIX}-python-colour"
@@ -42,8 +42,20 @@ makedepends=(
   "${MINGW_PACKAGE_PREFIX}-python-poetry-core"
   "${MINGW_PACKAGE_PREFIX}-python-build"
   "${MINGW_PACKAGE_PREFIX}-python-sphinx"
-  "${MINGW_PACKAGE_PREFIX}-texlive-scheme-medium"
+  "${MINGW_PACKAGE_PREFIX}-python-sphinx-furo"
+  "${MINGW_PACKAGE_PREFIX}-texlive-core"
+  "${MINGW_PACKAGE_PREFIX}-texlive-extra-utils"
+  "${MINGW_PACKAGE_PREFIX}-texlive-font-utils"
+  "${MINGW_PACKAGE_PREFIX}-texlive-fonts-recommended"
+  "${MINGW_PACKAGE_PREFIX}-texlive-lang-english"
+  "${MINGW_PACKAGE_PREFIX}-texlive-lang-european"
+  "${MINGW_PACKAGE_PREFIX}-texlive-latex-recommended"
+  "${MINGW_PACKAGE_PREFIX}-texlive-luatex"
+  "${MINGW_PACKAGE_PREFIX}-texlive-metapost"
+  "${MINGW_PACKAGE_PREFIX}-texlive-plain-generic"
+  "${MINGW_PACKAGE_PREFIX}-texlive-science"
 )
+
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/ManimCommunity/manim/archive/refs/tags/v${pkgver}.tar.gz")
 sha512sums=('2c9c939c8771b3f48583295d63e230f7db89f8a4f6b5d97d3afec8eb295df7e9b5035be6b2e0c1bf0db9f9a14257f0ad86d48c25ab3d24e6600437f708c4641f')
 
@@ -53,11 +65,11 @@ prepare() {
   ${MINGW_PREFIX}/bin/python -m build . -s -x -n
   cd dist
   tar -xf ${_realname}-$pkgver.tar.gz
-  rm -rf ${srcdir}/python-build-${CARCH}| true
-  cp -r "${_realname}-${pkgver}" ${srcdir}/"python-build-${CARCH}"  
+  rm -rf ${srcdir}/python-build-${CARCH} | true
+  cp -r "${_realname}-${pkgver}" ${srcdir}/"python-build-${CARCH}"
 }
 
-build() {  
+build() {
   msg "Python build for ${CARCH}"
   cd "${srcdir}/python-build-${CARCH}"
   ${MINGW_PREFIX}/bin/python setup.py build
@@ -68,7 +80,7 @@ build() {
 package() {
   cd "${srcdir}/python-build-${CARCH}"
   MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
-  ${MINGW_PREFIX}/bin/python setup.py install --prefix=${MINGW_PREFIX} \
+    ${MINGW_PREFIX}/bin/python setup.py install --prefix=${MINGW_PREFIX} \
     --root="${pkgdir}" --optimize=1 --skip-build
 
   local PREFIX_WIN=$(cygpath -wm ${MINGW_PREFIX})
@@ -76,7 +88,7 @@ package() {
   for _f in "${pkgdir}${MINGW_PREFIX}"/bin/*.py; do
     sed -i 's/\#\!.*//' $_f
   done
-  
+
   install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE"
   install -Dm644 LICENSE.community "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE.community"
 }
