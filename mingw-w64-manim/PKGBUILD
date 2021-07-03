@@ -97,4 +97,8 @@ package() {
 
   install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE"
   install -Dm644 LICENSE.community "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE.community"
+
+  install -dm 755 "${pkgdir}${MINGW_PREFIX}/share/doc/$_realname"
+  cp -r -a --no-preserve=ownership build/docs/html "${pkgdir}${MINGW_PREFIX}/share/doc/$_realname"
+  rm -rf "${pkgdir}${MINGW_PREFIX}/share/doc/$_realname/html/.doctrees"
 }
