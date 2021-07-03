@@ -67,6 +67,7 @@ prepare() {
   tar -xf ${_realname}-$pkgver.tar.gz
   rm -rf ${srcdir}/python-build-${CARCH} | true
   cp -r "${_realname}-${pkgver}" ${srcdir}/"python-build-${CARCH}"
+  cp -r "${_realname}-${pkgver}/docs" ${srcdir}/"python-build-${CARCH}/docs"
 }
 
 build() {
@@ -75,6 +76,11 @@ build() {
   ${MINGW_PREFIX}/bin/python setup.py build
 
   # build the docs
+  # this needs manim to be installed so use an venv
+  python -m venv --system-site-packages doc-env
+  doc-env/bin/python setup.py install --skip-build
+
+  ${MINGW_PREFIX}/bin/python -m sphinx -j auto -b dirhtml -v docs build/docs/html
 }
 
 package() {
