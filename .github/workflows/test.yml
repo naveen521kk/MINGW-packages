@@ -21,4 +21,10 @@ jobs:
           which texi2dvi
           TEX=tex texi2dvi test.texi
          
+      - name: run test
+        shell: msys2 {0}
+        run: |
+          cd /
+          perl.exe /mingw64/share/texmf-dist/scripts/texlive/fmtutil.pl  --sys --all --cnffile mingw64/etc/texmf/web2c/fmtutil.cnf
+
           
