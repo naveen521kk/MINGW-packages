@@ -10,7 +10,7 @@ jobs:
         with:
           msystem: MINGW64
           update: true
-          install: texinfo mingw-w64-x86_64-texlive-plain-generic
+          install: texinfo mingw-w64-x86_64-texlive-plain-generic texinfo-tex
       - name: CI-Build
         run: |
           curl -OL https://github.com/msys2/MSYS2-packages/files/6932259/test.zip
@@ -18,6 +18,7 @@ jobs:
       - name: Run
         shell: msys2 {0}
         run: |
-          texi2dvi test.texi
+          which texi2dvi
+          TEX=tex texi2dvi test.texi
          
           
