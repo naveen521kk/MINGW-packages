@@ -57,6 +57,7 @@ build() {
   cd "${srcdir}"/${_realname}
   [[ -d "${srcdir}"/buildcpp-${CARCH} ]] && rm -rf "${srcdir}"/buildcpp-${CARCH}
   mkdir -p "${srcdir}"/buildcpp-${CARCH} && cd "${srcdir}"/buildcpp-${CARCH}
+  autoreconf -fiv
   ../${_realname}/bindings/cpp/configure \
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
