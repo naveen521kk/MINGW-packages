@@ -51,10 +51,29 @@ build() {
       ../${_realname}
 
   ${MINGW_PREFIX}/bin/cmake --build .
+
+  # build cpp bindings for xournalpp
+  # (only works with autotools)
+  cd "${srcdir}"/${_realname}
+  [[ -d "${srcdir}"/buildcpp-${CARCH} ]] && rm -rf "${srcdir}"/buildcpp-${CARCH}
+  mkdir -p "${srcdir}"/buildcpp-${CARCH} && cd "${srcdir}"/buildcpp-${CARCH}
+  ../${_realname}/bindings/cpp/configure \
+    --prefix=${MINGW_PREFIX} \
+    --build=${MINGW_CHOST} \
+    --host=${MINGW_CHOST} \
+    --target=${MINGW_CHOST} \
+    --enable-static \
+    --enable-shared
+  make
+
 }
 
 package() {
   cd "${srcdir}/build-${MINGW_CHOST}"
 
   DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --build . --target install
+
+  cd "${srcdir}"/buildcpp-${CARCH}
+  make install DESTDIR="${pkgdir}"
+
 }
