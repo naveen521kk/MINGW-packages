@@ -34,7 +34,7 @@ prepare() {
 build() {
   # build cpp bindings for xournalpp
   # (only works with autotools so don't use cmake)
-  cd "${srcdir}"/${_realname}/bindings/cpp
+  cd "${srcdir}"/${_realname}
   autoreconf -fiv
   cd "${srcdir}"/${_realname}
   [[ -d "${srcdir}"/build-${CARCH} ]] && rm -rf "${srcdir}"/build-${CARCH}
