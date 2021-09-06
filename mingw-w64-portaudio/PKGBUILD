@@ -45,7 +45,7 @@ build() {
     --host=${MINGW_CHOST} \
     --target=${MINGW_CHOST} \
     --enable-static \
-    --enable-shared
+    --enable-shared \
     --enable-cxx
   # build breaks with multiple jobs when building C++ bindings:
   # https://github.com/PortAudio/portaudio/issues/540
