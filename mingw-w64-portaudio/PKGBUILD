@@ -32,50 +32,31 @@ prepare() {
 }
 
 build() {
-  [[ -d "build-static-${MINGW_CHOST}" ]] && rm -rf "build-${MINGW_CHOST}"
-  mkdir -p "${srcdir}/build-${MINGW_CHOST}"
-  cd "${srcdir}/build-${MINGW_CHOST}"
-
-  declare -a extra_config
-  if check_option "debug" "n"; then
-    extra_config+=("-DCMAKE_BUILD_TYPE=Release")
-  else
-    extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
-  fi
-
-  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
-    ${MINGW_PREFIX}/bin/cmake \
-      -GNinja \
-      -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
-      "${extra_config[@]}" \
-      ../${_realname}
-
-  ${MINGW_PREFIX}/bin/cmake --build .
-
   # build cpp bindings for xournalpp
-  # (only works with autotools)
+  # (only works with autotools so don't use cmake)
   cd "${srcdir}"/${_realname}/bindings/cpp
   autoreconf -fiv
   cd "${srcdir}"/${_realname}
-  [[ -d "${srcdir}"/buildcpp-${CARCH} ]] && rm -rf "${srcdir}"/buildcpp-${CARCH}
-  mkdir -p "${srcdir}"/buildcpp-${CARCH} && cd "${srcdir}"/buildcpp-${CARCH}
-  ../${_realname}/bindings/cpp/configure \
+  [[ -d "${srcdir}"/build-${CARCH} ]] && rm -rf "${srcdir}"/build-${CARCH}
+  mkdir -p "${srcdir}"/build-${CARCH} && cd "${srcdir}"/build-${CARCH}
+  ../${_realname}/configure \
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
     --host=${MINGW_CHOST} \
     --target=${MINGW_CHOST} \
     --enable-static \
     --enable-shared
+    --enable-cxx
+  # build breaks with multiple jobs when building C++ bindings:
+  # https://github.com/PortAudio/portaudio/issues/540
   make -j1
 
 }
 
 package() {
-  cd "${srcdir}/build-${MINGW_CHOST}"
-
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --build . --target install
-
-  cd "${srcdir}"/buildcpp-${CARCH}
+  cd "${srcdir}"/build-${CARCH}
   make install DESTDIR="${pkgdir}"
 
+  install -vDm 644 LICENSE.txt -t "${pkgdir}${MINGW_PREFIX}/share/licenses/${pkgname}"
+  install -vDm 644 README.* -t "${pkgdir}${MINGW_PREFIX}/share/doc/${pkgname}"
 }
