@@ -31,6 +31,7 @@ depends=(
 source=("gn::git+https://gn.googlesource.com/gn#tag=90294ccdcf9334ed25a76ac9b67689468e506342"
     "${_realname}-${pkgver}.tar.gz::https://github.com/google/angle/archive/${_commit}.zip"
     "bare-clones/build::git+https://chromium.googlesource.com/chromium/src/build.git#commit=be7dd8702fc15ed385ba6d4c7111ca59bad58514"
+    "bare-clones/testing::git+https://chromium.googlesource.com/chromium/src/testing.git#commit=85cca6c8d9a3d058c90bfd3096c9466f734e023c"
     "0001-gn-ninja-deletes-objs-workaround.patch"
     "0002-add-missing-limits.patch"
     "0003-remove-as-needed-from-ldflags.patch"
@@ -39,6 +40,7 @@ source=("gn::git+https://gn.googlesource.com/gn#tag=90294ccdcf9334ed25a76ac9b676
 )
 sha256sums=('SKIP'
             'e29eb5fec66a68011770abe387154e978aa268bdc66f81d4c62abf530495e928'
+            'SKIP'
             'SKIP'
             'b831576af25b275fca72851ec275c9d21bee0be29b4eb973a3e2a2580deac003'
             'd41ea264f389a34b3030ab5fb39107475a0e913123802dee241a20e1e5ecb1a5'
@@ -70,6 +72,11 @@ prepare() {
     rm -rf "${srcdir}"/angle/build
     ln -sf "${srcdir}"/build "${srcdir}"/angle
     echo "checkout_google_benchmark = false" >"${srcdir}"/angle/build/config/gclient_args.gni
+
+    echo "Preparing testing directory"
+    cd "${srcdir}"/testing
+    rm -rf "${srcdir}"/angle/testing
+    ln -sf "${srcdir}"/testing "${srcdir}"/angle
 
     echo "Preparing Angle Source"
     cd "${srcdir}"/angle
