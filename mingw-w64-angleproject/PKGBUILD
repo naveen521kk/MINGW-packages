@@ -65,15 +65,15 @@ prepare() {
 
     echo "Patching build directory"
     cd "${srcdir}"/build
-    apply_patch_with_msg 0007-add-mingw-toolchain-build.patch
-    #python "${srcdir}"/build/util/lastchange.py -o "${srcdir}"/build/util/LASTCHANGE
+    apply_patch_with_msg 0004-add-mingw-toolchain-build.patch
+    python "${srcdir}"/build/util/lastchange.py -o "${srcdir}"/build/util/LASTCHANGE
     rm -rf "${srcdir}"/angle/build
     ln -sf "${srcdir}"/build "${srcdir}"/angle
     echo "checkout_google_benchmark = false" >"${srcdir}"/angle/build/config/gclient_args.gni
 
     echo "Preparing Angle Source"
     cd "${srcdir}"/angle
-    apply_patch_with_msg 0004-add-mingw-toolchain-angle.patch
+    #apply_patch_with_msg 0004-add-mingw-toolchain-angle.patch
 
     sed "s/@VERSION@/$pkgver/g" -i "$srcdir/angle.pc"
     sed "s/@CFLAGS@//g" -i "$srcdir/angle.pc"
