@@ -72,6 +72,7 @@ prepare() {
     rm -rf "${srcdir}"/angle/build
     ln -sf "${srcdir}"/build "${srcdir}"/angle
     echo "checkout_google_benchmark = false" >"${srcdir}"/angle/build/config/gclient_args.gni
+    echo "generate_location_tags = false" >> "${srcdir}"/angle/build/config/gclient_args.gni
 
     echo "Preparing testing directory"
     cd "${srcdir}"/testing
