@@ -32,6 +32,7 @@ source=("gn::git+https://gn.googlesource.com/gn#tag=90294ccdcf9334ed25a76ac9b676
     "${_realname}-${pkgver}.tar.gz::https://github.com/google/angle/archive/${_commit}.zip"
     "bare-clones/build::git+https://chromium.googlesource.com/chromium/src/build.git#commit=be7dd8702fc15ed385ba6d4c7111ca59bad58514"
     "bare-clones/testing::git+https://chromium.googlesource.com/chromium/src/testing.git#commit=85cca6c8d9a3d058c90bfd3096c9466f734e023c"
+    "bare-clones/vulkan-deps::git+https://chromium.googlesource.com/vulkan-deps.git#commit=a46607dbd3224219d3df61e35f89d96879e8e1e7"
     "0001-gn-ninja-deletes-objs-workaround.patch"
     "0002-add-missing-limits.patch"
     "0003-remove-as-needed-from-ldflags.patch"
@@ -40,6 +41,7 @@ source=("gn::git+https://gn.googlesource.com/gn#tag=90294ccdcf9334ed25a76ac9b676
 )
 sha256sums=('SKIP'
             'e29eb5fec66a68011770abe387154e978aa268bdc66f81d4c62abf530495e928'
+            'SKIP'
             'SKIP'
             'SKIP'
             'b831576af25b275fca72851ec275c9d21bee0be29b4eb973a3e2a2580deac003'
@@ -74,14 +76,18 @@ prepare() {
     echo "checkout_google_benchmark = false" >"${srcdir}"/angle/build/config/gclient_args.gni
     echo "generate_location_tags = false" >> "${srcdir}"/angle/build/config/gclient_args.gni
 
-    echo "Preparing testing directory"
-    cd "${srcdir}"/testing
+    echo "Soft linking extra repos"
+    # angle/testing
     rm -rf "${srcdir}"/angle/testing
     ln -sf "${srcdir}"/testing "${srcdir}"/angle
+    # angle/vulkan-deps
+    rm -rf "${srcdir}"/angle/vulkan-deps
+    ln -sf "${srcdir}"/vulkan-deps "${srcdir}"/angle
 
     echo "Preparing Angle Source"
     cd "${srcdir}"/angle
     #apply_patch_with_msg 0004-add-mingw-toolchain-angle.patch
+
 
     sed "s/@VERSION@/$pkgver/g" -i "$srcdir/angle.pc"
     sed "s/@CFLAGS@//g" -i "$srcdir/angle.pc"
