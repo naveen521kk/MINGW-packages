@@ -1,0 +1,152 @@
+# Maintainer: Naveen M K <naveen521kk at gmail.com>
+
+_realname=angleproject
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=97.0.4692.71
+# blindly follow chromium version number
+# see https://omahaproxy.appspot.com/all.json?os=win&channel=stable
+# for the commit
+# See the `true_branch` variable there and use the most recent commit
+# from the branch(`chromium/<true_branch>`).
+_commit="907d2234409b3507bbcf15f30177692f9204afaa"
+pkgrel=1
+pkgdesc="A conformant OpenGL ES implementation (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+url="http://angleproject.org/"
+license=("BSD")
+makedepends=(
+    "${MINGW_PACKAGE_PREFIX}-python"
+    "${MINGW_PACKAGE_PREFIX}-ninja"
+    "${MINGW_PACKAGE_PREFIX}-cc"
+    "git"
+)
+depends=(
+    "${MINGW_PACKAGE_PREFIX}-libpng"
+    "${MINGW_PACKAGE_PREFIX}-libjpeg-turbo"
+)
+# All the commits for the sources should be taken from 
+# DEPS file at the root of the project
+source=("gn::git+https://gn.googlesource.com/gn#tag=90294ccdcf9334ed25a76ac9b67689468e506342"
+    "${_realname}-${pkgver}.tar.gz::https://github.com/google/angle/archive/${_commit}.zip"
+    "bare-clones/build::git+https://chromium.googlesource.com/chromium/src/build.git#commit=be7dd8702fc15ed385ba6d4c7111ca59bad58514"
+    "0001-gn-ninja-deletes-objs-workaround.patch"
+    "0002-add-missing-limits.patch"
+    "0003-remove-as-needed-from-ldflags.patch"
+    "0004-add-mingw-toolchain-build.patch"
+    "angle.pc"
+)
+sha256sums=('SKIP'
+            'e29eb5fec66a68011770abe387154e978aa268bdc66f81d4c62abf530495e928'
+            'SKIP'
+            'b831576af25b275fca72851ec275c9d21bee0be29b4eb973a3e2a2580deac003'
+            'd41ea264f389a34b3030ab5fb39107475a0e913123802dee241a20e1e5ecb1a5'
+            '5d9998609ec6098401e395c8afaaddce52105c999489f27c906259b5cb47ce90'
+            '63f35c12168fcb5f025db2cb3a4bc693cb4546ce561dc95e45d10c1579daf786'
+            '98b2320e0d2041cb4198b082ca97a6ad8d5104eb6953a57ace1458bc40f310f4')
+
+apply_patch_with_msg() {
+    for _patch in "$@"; do
+        msg2 "Applying $_patch"
+        patch -Nbp1 -i "${srcdir}/$_patch"
+    done
+}
+
+prepare() {
+    mv "${srcdir}/angle-${_commit}" "${srcdir}/angle"
+
+    echo "Preparing GN source"
+    cd "${srcdir}"/gn
+    apply_patch_with_msg 0001-gn-ninja-deletes-objs-workaround.patch
+    apply_patch_with_msg 0002-add-missing-limits.patch
+    apply_patch_with_msg 0003-remove-as-needed-from-ldflags.patch
+    python build/gen.py --out-path=out/${CARCH} --platform=mingw
+
+    echo "Patching build directory"
+    cd "${srcdir}"/build
+    apply_patch_with_msg 0007-add-mingw-toolchain-build.patch
+    #python "${srcdir}"/build/util/lastchange.py -o "${srcdir}"/build/util/LASTCHANGE
+    rm -rf "${srcdir}"/angle/build
+    ln -sf "${srcdir}"/build "${srcdir}"/angle
+    echo "checkout_google_benchmark = false" >"${srcdir}"/angle/build/config/gclient_args.gni
+
+    echo "Preparing Angle Source"
+    cd "${srcdir}"/angle
+    apply_patch_with_msg 0004-add-mingw-toolchain-angle.patch
+
+    sed "s/@VERSION@/$pkgver/g" -i "$srcdir/angle.pc"
+    sed "s/@CFLAGS@//g" -i "$srcdir/angle.pc"
+    sed "s|^prefix=.*|prefix=${MINGW_PREFIX}|g" -i "$srcdir/angle.pc"
+}
+
+build() {
+    local BUILDTYPE=Release
+    if check_option "debug" "y"; then
+        BUILDTYPE="Debug"
+    fi
+
+    case ${CARCH} in
+    i686)
+        _arch=x86
+        ;;
+    x86_64)
+        _arch=x64
+        ;;
+    esac
+    case ${BUILDTYPE} in
+    Release)
+        _is_debug=true
+        ;;
+    Debug)
+        _is_debug=false
+        ;;
+    esac
+
+    case ${MSYSTEM} in
+    CLANG64|CLANG32)
+        export CXX=clang++
+        export CC=clang
+        export LD=clang++
+        export AR=llvm-ar
+    ;;
+    *)
+        export CXX=g++
+        export CC=gcc
+        export LD=g++
+        export AR=ar
+    ;;
+    esac
+
+    export DEPOT_TOOLS_WIN_TOOLCHAIN=0
+    cd "${srcdir}"/gn
+    ninja -C out/${CARCH}
+
+    cd "${srcdir}"/skia
+    "${srcdir}"/gn/out/${CARCH}/gn gen "${PWD}/out/${BUILDTYPE}-${CARCH}" --args="target_cpu=\"${_arch}\" is_debug=${_is_debug} cc=\"${CC}\" cxx=\"${CXX}\" is_component_build=false use_system_libjpeg=true"
+    ninja -C "${PWD}/out/${BUILDTYPE}-${CARCH}"
+}
+
+package() {
+    cd "skia"
+    local BUILDTYPE=Release
+    if check_option "debug" "y"; then
+        BUILDTYPE="Debug"
+    fi
+    ls "${PWD}/out/${BUILDTYPE}-${CARCH}"
+
+    install -d "$pkgdir"/${MINGW_PREFIX}/bin
+    install -Dm755 out/${BUILDTYPE}-${CARCH}/*.dll "$pkgdir"/${MINGW_PREFIX}/bin/
+
+    install -d "$pkgdir"/${MINGW_PREFIX}/lib
+    install -Dm755 out/${BUILDTYPE}-${CARCH}/*.a "$pkgdir"/${MINGW_PREFIX}/lib/
+
+    install -d "$pkgdir"/${MINGW_PREFIX}/include/skia
+    cp --parents `find ./include -name \*.h*` "$pkgdir"/${MINGW_PREFIX}/include/skia
+
+    install -d "$pkgdir"/${MINGW_PREFIX}/lib/pkgconfig
+    install -m644 "$srcdir/skia.pc" "$pkgdir"/${MINGW_PREFIX}/lib/pkgconfig/
+
+    install -d "$pkgdir"/${MINGW_PREFIX}/share/licenses/skia
+    install -m644 LICENSE* "$pkgdir"/${MINGW_PREFIX}/share/licenses/${_realname}
+}
