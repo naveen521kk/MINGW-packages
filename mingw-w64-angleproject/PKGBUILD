@@ -122,13 +122,13 @@ build() {
     cd "${srcdir}"/gn
     ninja -C out/${CARCH}
 
-    cd "${srcdir}"/skia
+    cd "${srcdir}"/angle
     "${srcdir}"/gn/out/${CARCH}/gn gen "${PWD}/out/${BUILDTYPE}-${CARCH}" --args="target_cpu=\"${_arch}\" is_debug=${_is_debug} cc=\"${CC}\" cxx=\"${CXX}\" is_component_build=false use_system_libjpeg=true"
     ninja -C "${PWD}/out/${BUILDTYPE}-${CARCH}"
 }
 
 package() {
-    cd "skia"
+    cd "angle"
     local BUILDTYPE=Release
     if check_option "debug" "y"; then
         BUILDTYPE="Debug"
