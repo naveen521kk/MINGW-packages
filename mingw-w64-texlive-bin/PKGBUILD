@@ -131,7 +131,8 @@ build() {
      --with-xdvi-x-toolkit=xaw \
      --disable-dump-share \
      --enable-aleph \
-     --disable-xpdfopen
+     --disable-xpdfopen \
+     --enable-xdvik
    #############################################################
    ### make
    echo "-------------------------------------------------------"
