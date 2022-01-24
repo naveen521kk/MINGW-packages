@@ -128,10 +128,10 @@ build() {
      --with-system-mpfr \
      --with-system-potrace \
      --with-system-libpaper \
-     --with-xdvi-x-toolkit=xaw \
      --disable-dump-share \
      --enable-aleph \
-     --disable-xpdfopen
+     --disable-xpdfopen \
+     --enable-xindy
    #############################################################
    ### make
    echo "-------------------------------------------------------"
