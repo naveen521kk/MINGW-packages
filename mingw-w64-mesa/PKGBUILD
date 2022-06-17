@@ -100,7 +100,7 @@ prepare() {
 
 build() {
   cd ${srcdir}/${_realname}-${pkgver}
-  buildconf="${MINGW_PREFIX}/bin/meson ./build/windows-${_mach}
+  buildconf="${MINGW_PREFIX}/bin/meson-script.py ./build/windows-${_mach}
   --prefix=${MINGW_PREFIX}
   --buildtype=release
   --backend=ninja
