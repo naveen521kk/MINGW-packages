@@ -1,0 +1,327 @@
+From 769065bf48d6a2ef4c1d527eca7ec289fb8ce9ab Mon Sep 17 00:00:00 2001
+From: Matt Schulte <maschu@microsoft.com>
+Date: Wed, 24 Jun 2020 11:00:55 -0700
+Subject: [PATCH] Output exit code in FAILED message
+
+Outputs the exit code after "FAILED" for any process that did not
+complete successfully.
+
+Output looks like "FAILED (<exitcode>): <outputs>"
+---
+ src/build.cc            |  8 ++++----
+ src/build.h             |  2 +-
+ src/build_test.cc       | 10 +++++-----
+ src/exit_status.h       | 11 ++++++++++-
+ src/status.cc           | 19 ++++++++++++-------
+ src/status.h            |  4 ++--
+ src/subprocess-posix.cc |  8 +++++---
+ src/subprocess-win32.cc |  8 ++++----
+ src/subprocess.h        |  7 +++++--
+ src/subprocess_test.cc  | 12 ++++++++----
+ 10 files changed, 56 insertions(+), 33 deletions(-)
+
+diff --git a/src/build.cc b/src/build.cc
+index 6f11ed7..358352c 100644
+--- a/src/build.cc
++++ b/src/build.cc
+@@ -67,7 +67,7 @@ bool DryRunCommandRunner::WaitForCommand(Result* result) {
+    if (finished_.empty())
+      return false;
+ 
+-   result->status = ExitSuccess;
++   result->status.result = ExitSuccess;
+    result->edge = finished_.front();
+    finished_.pop();
+    return true;
+@@ -652,7 +652,7 @@ bool Builder::Build(string* err) {
+     if (pending_commands) {
+       CommandRunner::Result result;
+       if (!command_runner_->WaitForCommand(&result) ||
+-          result.status == ExitInterrupted) {
++          result.status.result == ExitInterrupted) {
+         Cleanup();
+         status_->BuildFinished();
+         *err = "interrupted by user";
+@@ -751,7 +751,7 @@ bool Builder::FinishCommand(CommandRunner::Result* result, string* err) {
+       if (!result->output.empty())
+         result->output.append("\n");
+       result->output.append(extract_err);
+-      result->status = ExitFailure;
++      result->status.result = ExitFailure;
+     }
+   }
+ 
+@@ -761,7 +761,7 @@ bool Builder::FinishCommand(CommandRunner::Result* result, string* err) {
+   end_time_millis = GetTimeMillis() - start_time_millis_;
+   running_edges_.erase(it);
+ 
+-  status_->BuildEdgeFinished(edge, end_time_millis, result->success(),
++  status_->BuildEdgeFinished(edge, end_time_millis, result,
+                              result->output);
+ 
+   // The rest of this function only applies to successful commands.
+diff --git a/src/build.h b/src/build.h
+index d697dfb..9d6fc27 100644
+--- a/src/build.h
++++ b/src/build.h
+@@ -144,7 +144,7 @@ struct CommandRunner {
+     Edge* edge;
+     ExitStatus status;
+     std::string output;
+-    bool success() const { return status == ExitSuccess; }
++    bool success() const { return status.result == ExitSuccess; }
+   };
+   /// Wait for a command to complete, or return false if interrupted.
+   virtual bool WaitForCommand(Result* result) = 0;
+diff --git a/src/build_test.cc b/src/build_test.cc
+index 4ef62b2..62eb3af 100644
+--- a/src/build_test.cc
++++ b/src/build_test.cc
+@@ -663,15 +663,15 @@ bool FakeCommandRunner::WaitForCommand(Result* result) {
+ 
+   if (edge->rule().name() == "interrupt" ||
+       edge->rule().name() == "touch-interrupt") {
+-    result->status = ExitInterrupted;
++    result->status = ExitStatus(ExitInterrupted, 2);;
+     return true;
+   }
+ 
+   if (edge->rule().name() == "console") {
+     if (edge->use_console())
+-      result->status = ExitSuccess;
++      result->status = ExitStatus(ExitSuccess, 0);
+     else
+-      result->status = ExitFailure;
++      result->status = ExitStatus(ExitFailure, 1);
+     active_edges_.erase(edge_iter);
+     return true;
+   }
+@@ -686,9 +686,9 @@ bool FakeCommandRunner::WaitForCommand(Result* result) {
+ 
+   if (edge->rule().name() == "fail" ||
+       (edge->rule().name() == "touch-fail-tick2" && fs_->now_ == 2))
+-    result->status = ExitFailure;
++    result->status = ExitStatus(ExitFailure, 1);
+   else
+-    result->status = ExitSuccess;
++    result->status = ExitStatus(ExitFailure, 1);
+ 
+   // Provide a way for test cases to verify when an edge finishes that
+   // some other edge is still active.  This is useful for test cases
+diff --git a/src/exit_status.h b/src/exit_status.h
+index a714ece..2da179d 100644
+--- a/src/exit_status.h
++++ b/src/exit_status.h
+@@ -15,10 +15,19 @@
+ #ifndef NINJA_EXIT_STATUS_H_
+ #define NINJA_EXIT_STATUS_H_
+ 
+-enum ExitStatus {
++enum ExitResult {
+   ExitSuccess,
+   ExitFailure,
+   ExitInterrupted
+ };
+ 
++struct ExitStatus {
++  ExitStatus(): result(ExitSuccess), exit_code(0) {}
++  ExitStatus(ExitResult result, int exit_code):
++    result(result), exit_code(exit_code) {}
++  ExitResult result;
++  int exit_code;
++};
++
++
+ #endif  // NINJA_EXIT_STATUS_H_
+diff --git a/src/status.cc b/src/status.cc
+index 88b7781..27aa1c0 100644
+--- a/src/status.cc
++++ b/src/status.cc
+@@ -59,7 +59,7 @@ void StatusPrinter::BuildEdgeStarted(const Edge* edge,
+ }
+ 
+ void StatusPrinter::BuildEdgeFinished(Edge* edge, int64_t end_time_millis,
+-                                      bool success, const string& output) {
++                                      const CommandRunner::Result* result, const string& output) {
+   time_millis_ = end_time_millis;
+   ++finished_edges_;
+ 
+@@ -75,21 +75,26 @@ void StatusPrinter::BuildEdgeFinished(Edge* edge, int64_t end_time_millis,
+   --running_edges_;
+ 
+   // Print the command that is spewing before printing its output.
+-  if (!success) {
++  if (!result->success()) {
+     string outputs;
+     for (vector<Node*>::const_iterator o = edge->outputs_.begin();
+          o != edge->outputs_.end(); ++o)
+       outputs += (*o)->path() + " ";
+ 
++    char buf[32];
++    string exit_code_str;
++    snprintf(buf, sizeof(buf), "%d", result->status.exit_code);
++    exit_code_str += buf;
++    string failed = "FAILED (" + exit_code_str + "): ";
+     if (printer_.supports_color()) {
+-        printer_.PrintOnNewLine("\x1B[31m" "FAILED: " "\x1B[0m" + outputs + "\n");
++        printer_.PrintOnNewLine("\x1B[31m" + failed + "\x1B[0m" + outputs + "\n");
+     } else {
+-        printer_.PrintOnNewLine("FAILED: " + outputs + "\n");
++        printer_.PrintOnNewLine(failed + outputs + "\n");
+     }
+     printer_.PrintOnNewLine(edge->EvaluateCommand() + "\n");
+   }
+ 
+-  if (!output.empty()) {
++  if (!result->output.empty()) {
+     // ninja sets stdout and stderr of subprocesses to a pipe, to be able to
+     // check if the output is empty. Some compilers, e.g. clang, check
+     // isatty(stderr) to decide if they should print colored output.
+@@ -103,9 +108,9 @@ void StatusPrinter::BuildEdgeFinished(Edge* edge, int64_t end_time_millis,
+     // thousands of parallel compile commands.)
+     string final_output;
+     if (!printer_.supports_color())
+-      final_output = StripAnsiEscapeCodes(output);
++      final_output = StripAnsiEscapeCodes(result->output);
+     else
+-      final_output = output;
++      final_output = result->output;
+ 
+ #ifdef _WIN32
+     // Fix extra CR being added on Windows, writing out CR CR LF (#773)
+diff --git a/src/status.h b/src/status.h
+index e211ba3..9999565 100644
+--- a/src/status.h
++++ b/src/status.h
+@@ -27,7 +27,7 @@ struct Status {
+   virtual void PlanHasTotalEdges(int total) = 0;
+   virtual void BuildEdgeStarted(const Edge* edge, int64_t start_time_millis) = 0;
+   virtual void BuildEdgeFinished(Edge* edge, int64_t end_time_millis,
+-                                 bool success, const std::string& output) = 0;
++                                const CommandRunner::Result* result, const std::string& output) = 0;
+   virtual void BuildLoadDyndeps() = 0;
+   virtual void BuildStarted() = 0;
+   virtual void BuildFinished() = 0;
+@@ -46,7 +46,7 @@ struct StatusPrinter : Status {
+   virtual void PlanHasTotalEdges(int total);
+   virtual void BuildEdgeStarted(const Edge* edge, int64_t start_time_millis);
+   virtual void BuildEdgeFinished(Edge* edge, int64_t end_time_millis,
+-                                 bool success, const std::string& output);
++                                 const CommandRunner::Result* result, const std::string& output);
+   virtual void BuildLoadDyndeps();
+   virtual void BuildStarted();
+   virtual void BuildFinished();
+diff --git a/src/subprocess-posix.cc b/src/subprocess-posix.cc
+index 8e78540..fb0669c 100644
+--- a/src/subprocess-posix.cc
++++ b/src/subprocess-posix.cc
+@@ -167,13 +167,15 @@ ExitStatus Subprocess::Finish() {
+   if (WIFEXITED(status)) {
+     int exit = WEXITSTATUS(status);
+     if (exit == 0)
+-      return ExitSuccess;
++      return ExitStatus(ExitSuccess, exit);
++    else
++      return ExitStatus(ExitFailure, exit);
+   } else if (WIFSIGNALED(status)) {
+     if (WTERMSIG(status) == SIGINT || WTERMSIG(status) == SIGTERM
+         || WTERMSIG(status) == SIGHUP)
+-      return ExitInterrupted;
++      return ExitStatus(ExitInterrupted, status);
+   }
+-  return ExitFailure;
++  return ExitStatus(ExitFailure, status);
+ }
+ 
+ bool Subprocess::Done() const {
+diff --git a/src/subprocess-win32.cc b/src/subprocess-win32.cc
+index ff3baac..3ba9f20 100644
+--- a/src/subprocess-win32.cc
++++ b/src/subprocess-win32.cc
+@@ -187,7 +187,7 @@ void Subprocess::OnPipeReady() {
+ 
+ ExitStatus Subprocess::Finish() {
+   if (!child_)
+-    return ExitFailure;
++    return ExitStatus(ExitFailure, INT32_MAX);
+ 
+   // TODO: add error handling for all of these.
+   WaitForSingleObject(child_, INFINITE);
+@@ -198,9 +198,9 @@ ExitStatus Subprocess::Finish() {
+   CloseHandle(child_);
+   child_ = NULL;
+ 
+-  return exit_code == 0              ? ExitSuccess :
+-         exit_code == CONTROL_C_EXIT ? ExitInterrupted :
+-                                       ExitFailure;
++  return exit_code == 0              ? ExitStatus(ExitSuccess, exit_code) :
++         exit_code == CONTROL_C_EXIT ? ExitStatus(ExitInterrupted, exit_code) :
++                                       ExitStatus(ExitFailure, exit_code);
+ }
+ 
+ bool Subprocess::Done() const {
+diff --git a/src/subprocess.h b/src/subprocess.h
+index 9e3d2ee..11c6c1c 100644
+--- a/src/subprocess.h
++++ b/src/subprocess.h
+@@ -42,8 +42,11 @@
+ struct Subprocess {
+   ~Subprocess();
+ 
+-  /// Returns ExitSuccess on successful process exit, ExitInterrupted if
+-  /// the process was interrupted, ExitFailure if it otherwise failed.
++  /// Returns ExitStatus for the end of the process. The result field will be
++  /// populated with ExitSuccess on successful process exit, ExitInterrupted if
++  /// the process was interrupted, ExitFailure if it otherwise failed. The
++  /// exit_code field will contain the exit code (exit status, errorlevel) of
++  /// the process.
+   ExitStatus Finish();
+ 
+   bool Done() const;
+diff --git a/src/subprocess_test.cc b/src/subprocess_test.cc
+index 073fe86..2995a14 100644
+--- a/src/subprocess_test.cc
++++ b/src/subprocess_test.cc
+@@ -50,7 +50,8 @@ TEST_F(SubprocessTest, BadCommandStderr) {
+     subprocs_.DoWork();
+   }
+ 
+-  EXPECT_EQ(ExitFailure, subproc->Finish());
++  ExitStatus status = subproc->Finish();
++  EXPECT_EQ(ExitFailure, status.result);
+   EXPECT_NE("", subproc->GetOutput());
+ }
+ 
+@@ -64,7 +65,8 @@ TEST_F(SubprocessTest, NoSuchCommand) {
+     subprocs_.DoWork();
+   }
+ 
+-  EXPECT_EQ(ExitFailure, subproc->Finish());
++  ExitStatus status = subproc->Finish();
++  EXPECT_EQ(ExitFailure, status.result);
+   EXPECT_NE("", subproc->GetOutput());
+ #ifdef _WIN32
+   ASSERT_EQ("CreateProcess failed: The system cannot find the file "
+@@ -170,7 +172,9 @@ TEST_F(SubprocessTest, SetWithSingle) {
+   while (!subproc->Done()) {
+     subprocs_.DoWork();
+   }
+-  ASSERT_EQ(ExitSuccess, subproc->Finish());
++  ExitStatus status = subproc->Finish();
++  EXPECT_EQ(ExitSuccess, status.result);
++  EXPECT_EQ(0, status.exit_code);
+   ASSERT_NE("", subproc->GetOutput());
+ 
+   ASSERT_EQ(1u, subprocs_.finished_.size());
+@@ -210,7 +214,7 @@ TEST_F(SubprocessTest, SetWithMulti) {
+   ASSERT_EQ(3u, subprocs_.finished_.size());
+ 
+   for (int i = 0; i < 3; ++i) {
+-    ASSERT_EQ(ExitSuccess, processes[i]->Finish());
++    ASSERT_EQ(ExitSuccess, processes[i]->Finish().result);
+     ASSERT_NE("", processes[i]->GetOutput());
+     delete processes[i];
+   }
+-- 
+2.36.1
+

@@ -4,7 +4,7 @@ _realname=ninja
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=1.11.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Ninja is a small build system with a focus on speed (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
@@ -13,8 +13,16 @@ license=('Apache')
 depends=()
 options=('strip' 'staticlibs')
 makedepends=("re2c" "${MINGW_PACKAGE_PREFIX}-python" "${MINGW_PACKAGE_PREFIX}-cc")
-source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/ninja-build/ninja/archive/v${pkgver}.tar.gz")
-sha256sums=('3c6ba2e66400fe3f1ae83deb4b235faf3137ec20bd5b08c29bfc368db143e4c6')
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/ninja-build/ninja/archive/v${pkgver}.tar.gz"
+        "0001-Output-exit-code-in-FAILED-message.patch")
+sha256sums=('3c6ba2e66400fe3f1ae83deb4b235faf3137ec20bd5b08c29bfc368db143e4c6'
+            'fe017377d30243be9fcda2bf857eb8425f7f738d8d19b01780b786cf87b3c0e9')
+
+prepare() {
+  cd ${srcdir}/${_realname}-${pkgver}
+
+  patch -Nbp1 -i "${srcdir}/0001-Output-exit-code-in-FAILED-message.patch"
+}
 
 build() {
   mkdir -p "${pkgdir}${MINGW_PREFIX}"/bin
