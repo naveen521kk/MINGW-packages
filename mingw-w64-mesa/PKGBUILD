@@ -142,7 +142,7 @@ build() {
   -Dc_link_args='-s' \
   -Dcpp_link_args='-s'
 
-  ${MINGW_PREFIX}/bin/ninja -v -C ./build/windows-${_mach}
+  meson compile -C ./build/windows-${_mach}
 }
 
 package() {
