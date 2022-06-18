@@ -102,6 +102,7 @@ build() {
   cd ${srcdir}/${_realname}-${pkgver}
 
   export PYTHONUTF8=1
+  export PYTHONDEVMODE=1
 
   buildconf="${MINGW_PREFIX}/bin/meson ./build/windows-${_mach}
   --prefix=${MINGW_PREFIX}
