@@ -1,41 +1,49 @@
---- meson-0.62.2/mesonbuild/scripts/meson_exe.py.orig	2022-06-17 22:38:08.489768500 +0200
-+++ meson-0.62.2/mesonbuild/scripts/meson_exe.py	2022-06-17 22:39:49.498588700 +0200
-@@ -20,6 +20,8 @@
- import typing as T
- import locale
- 
-+print("FOOBAR", sys.argv)
-+
- from .. import mesonlib
- from ..backend.backends import ExecutableSerialisation
- 
-@@ -33,6 +35,7 @@
-     return parser
- 
- def run_exe(exe: ExecutableSerialisation, extra_env: T.Optional[T.Dict[str, str]] = None) -> int:
-+    print("run_exe", sys.stdout, sys.stderr)
-     if exe.exe_wrapper:
-         if not exe.exe_wrapper.found():
-             raise AssertionError('BUG: Can\'t run cross-compiled exe {!r} with not-found '
-@@ -63,6 +66,7 @@
-         assert not exe.capture, 'Cannot capture and print to console at the same time'
-         pipe = None
- 
-+    print(cmd_args, exe.workdir, stdin)
-     p = subprocess.Popen(cmd_args, env=child_env, cwd=exe.workdir,
-                          close_fds=False, stdin=stdin, stdout=pipe, stderr=pipe)
-     stdout, stderr = p.communicate()
-@@ -98,6 +102,7 @@
-             with open(exe.capture, 'wb') as output:
-                 output.write(stdout)
- 
-+    print("run_exe done")
-     return 0
- 
- def run(args: T.List[str]) -> int:
 --- meson-0.62.2/mesonbuild/mesonmain.py.orig	2022-06-02 18:16:59.000000000 +0200
-+++ meson-0.62.2/mesonbuild/mesonmain.py	2022-06-17 23:34:06.733482600 +0200
-@@ -271,4 +271,6 @@
++++ meson-0.62.2/mesonbuild/mesonmain.py	2022-06-19 08:53:19.101307800 +0200
+@@ -193,15 +193,18 @@
+                   'regencheck': 'regen_checker'}
+     module_name = script_map.get(script_name, script_name)
+ 
++    print("import_module")
+     try:
+         module = importlib.import_module('mesonbuild.scripts.' + module_name)
+     except ModuleNotFoundError as e:
+         mlog.exception(e)
+         return 1
+ 
++    print("module.run", module)
+     try:
+         return module.run(script_args)
+     except MesonException as e:
++        print("module.run: error")
+         mlog.error(f'Error in {script_name} helper script:')
+         mlog.exception(e)
+         return 1
+@@ -233,6 +236,7 @@
+     # locale isn't Unicode, just force stdout to accept it. This tries
+     # to emulate enough of PEP 540 to work elsewhere.
+     ensure_stdout_accepts_unicode()
++    print("ensure_stdout_accepts_unicode")
+ 
+     # https://github.com/mesonbuild/meson/issues/3653
+     if sys.platform.lower() == 'msys':
+@@ -246,6 +250,7 @@
+ 
+     # Set the meson command that will be used to run scripts and so on
+     mesonlib.set_meson_command(mainfile)
++    print("set_meson_command")
+ 
+     args = original_args[:]
+ 
+@@ -257,6 +262,7 @@
+             # "meson --reconfigure"
+             args = ['--reconfigure'] + args[2:]
+         else:
++            print("run_script_command:")
+             return run_script_command(args[1], args[2:])
+ 
+     return CommandLineParser().run(args)
+@@ -271,4 +277,6 @@
      return run(sys.argv[1:], launcher)
  
  if __name__ == '__main__':
