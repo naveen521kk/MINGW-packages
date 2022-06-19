@@ -1,3 +1,38 @@
+--- meson-0.62.2/mesonbuild/scripts/meson_exe.py.orig	2022-06-17 22:38:08.489768500 +0200
++++ meson-0.62.2/mesonbuild/scripts/meson_exe.py	2022-06-17 22:39:49.498588700 +0200
+@@ -20,6 +20,8 @@
+ import typing as T
+ import locale
+ 
++print("FOOBAR", sys.argv)
++
+ from .. import mesonlib
+ from ..backend.backends import ExecutableSerialisation
+ 
+@@ -33,6 +35,7 @@
+     return parser
+ 
+ def run_exe(exe: ExecutableSerialisation, extra_env: T.Optional[T.Dict[str, str]] = None) -> int:
++    print("run_exe", sys.stdout, sys.stderr)
+     if exe.exe_wrapper:
+         if not exe.exe_wrapper.found():
+             raise AssertionError('BUG: Can\'t run cross-compiled exe {!r} with not-found '
+@@ -63,6 +66,7 @@
+         assert not exe.capture, 'Cannot capture and print to console at the same time'
+         pipe = None
+ 
++    print(cmd_args, exe.workdir, stdin)
+     p = subprocess.Popen(cmd_args, env=child_env, cwd=exe.workdir,
+                          close_fds=False, stdin=stdin, stdout=pipe, stderr=pipe)
+     stdout, stderr = p.communicate()
+@@ -98,6 +102,7 @@
+             with open(exe.capture, 'wb') as output:
+                 output.write(stdout)
+ 
++    print("run_exe done")
+     return 0
+ 
+ def run(args: T.List[str]) -> int:
 --- meson-0.62.2/mesonbuild/mesonmain.py.orig	2022-06-02 18:16:59.000000000 +0200
 +++ meson-0.62.2/mesonbuild/mesonmain.py	2022-06-19 08:53:19.101307800 +0200
 @@ -193,15 +193,18 @@
