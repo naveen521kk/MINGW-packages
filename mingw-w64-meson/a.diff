@@ -1,59 +1,8 @@
---- meson-0.62.2/mesonbuild/scripts/meson_exe.py.orig	2022-06-17 22:38:08.489768500 +0200
-+++ meson-0.62.2/mesonbuild/scripts/meson_exe.py	2022-06-19 14:06:04.388927800 +0200
-@@ -20,6 +20,16 @@
- import typing as T
- import locale
- 
-+print("FOOBAR", sys.argv)
-+import gc; gc.disable()
-+import faulthandler; faulthandler.enable()
-+
-+def bla():
-+    print('atexit: goodbye')
-+
-+import atexit
-+atexit.register(bla)
-+
- from .. import mesonlib
- from ..backend.backends import ExecutableSerialisation
- 
-@@ -33,6 +43,7 @@
-     return parser
- 
- def run_exe(exe: ExecutableSerialisation, extra_env: T.Optional[T.Dict[str, str]] = None) -> int:
-+    print("run_exe", sys.stdout, sys.stderr)
-     if exe.exe_wrapper:
-         if not exe.exe_wrapper.found():
-             raise AssertionError('BUG: Can\'t run cross-compiled exe {!r} with not-found '
-@@ -63,6 +74,7 @@
-         assert not exe.capture, 'Cannot capture and print to console at the same time'
-         pipe = None
- 
-+    print(cmd_args, exe.workdir, stdin)
-     p = subprocess.Popen(cmd_args, env=child_env, cwd=exe.workdir,
-                          close_fds=False, stdin=stdin, stdout=pipe, stderr=pipe)
-     stdout, stderr = p.communicate()
-@@ -98,6 +110,7 @@
-             with open(exe.capture, 'wb') as output:
-                 output.write(stdout)
- 
-+    print("run_exe done")
-     return 0
- 
- def run(args: T.List[str]) -> int:
-@@ -122,4 +135,8 @@
-     return run_exe(exe)
- 
- if __name__ == '__main__':
--    sys.exit(run(sys.argv[1:]))
-+    try:
-+        sys.exit(run(sys.argv[1:]))
-+    except BaseException as e:
-+        print(e)
-+        raise
---- meson-0.62.2/mesonbuild/mesonmain.py.orig	2022-06-02 18:16:59.000000000 +0200
-+++ meson-0.62.2/mesonbuild/mesonmain.py	2022-06-19 08:53:19.101307800 +0200
-@@ -193,15 +193,18 @@
+diff --git a/mesonbuild/mesonmain.py b/mesonbuild/mesonmain.py
+index 5d720f0d0..aa0f5ff45 100644
+--- a/mesonbuild/mesonmain.py
++++ b/mesonbuild/mesonmain.py
+@@ -193,15 +193,18 @@ def run_script_command(script_name, script_args):
                    'regencheck': 'regen_checker'}
      module_name = script_map.get(script_name, script_name)
  
@@ -72,7 +21,7 @@
          mlog.error(f'Error in {script_name} helper script:')
          mlog.exception(e)
          return 1
-@@ -233,6 +236,7 @@
+@@ -233,6 +236,7 @@ def run(original_args, mainfile):
      # locale isn't Unicode, just force stdout to accept it. This tries
      # to emulate enough of PEP 540 to work elsewhere.
      ensure_stdout_accepts_unicode()
@@ -80,7 +29,7 @@
  
      # https://github.com/mesonbuild/meson/issues/3653
      if sys.platform.lower() == 'msys':
-@@ -246,6 +250,7 @@
+@@ -246,6 +250,7 @@ def run(original_args, mainfile):
  
      # Set the meson command that will be used to run scripts and so on
      mesonlib.set_meson_command(mainfile)
@@ -88,7 +37,7 @@
  
      args = original_args[:]
  
-@@ -257,6 +262,7 @@
+@@ -257,6 +262,7 @@ def run(original_args, mainfile):
              # "meson --reconfigure"
              args = ['--reconfigure'] + args[2:]
          else:
@@ -96,7 +45,12 @@
              return run_script_command(args[1], args[2:])
  
      return CommandLineParser().run(args)
-@@ -271,4 +277,6 @@
+@@ -268,7 +274,11 @@ def main():
+         launcher = sys.executable
+     else:
+         launcher = os.path.realpath(sys.argv[0])
++    print("Debug:", sys.argv, launcher)
++    traceback.print_stack()
      return run(sys.argv[1:], launcher)
  
  if __name__ == '__main__':
@@ -104,3 +58,65 @@
 +    res = main()
 +    print("DONEEEEE", res)
 +    sys.exit(res)
+diff --git a/mesonbuild/scripts/meson_exe.py b/mesonbuild/scripts/meson_exe.py
+index 486c101a1..0b62636ea 100644
+--- a/mesonbuild/scripts/meson_exe.py
++++ b/mesonbuild/scripts/meson_exe.py
+@@ -19,6 +19,17 @@ import pickle
+ import subprocess
+ import typing as T
+ import locale
++import traceback
++
++print("FOOBAR", sys.argv)
++import gc; gc.disable()
++import faulthandler; faulthandler.enable()
++
++def bla():
++    print('atexit: goodbye')
++
++import atexit
++atexit.register(bla)
+ 
+ from .. import mesonlib
+ from ..backend.backends import ExecutableSerialisation
+@@ -33,6 +44,7 @@ def buildparser() -> argparse.ArgumentParser:
+     return parser
+ 
+ def run_exe(exe: ExecutableSerialisation, extra_env: T.Optional[T.Dict[str, str]] = None) -> int:
++    print("run_exe", sys.stdout, sys.stderr)
+     if exe.exe_wrapper:
+         if not exe.exe_wrapper.found():
+             raise AssertionError('BUG: Can\'t run cross-compiled exe {!r} with not-found '
+@@ -63,6 +75,7 @@ def run_exe(exe: ExecutableSerialisation, extra_env: T.Optional[T.Dict[str, str]
+         assert not exe.capture, 'Cannot capture and print to console at the same time'
+         pipe = None
+ 
++    print(cmd_args, exe.workdir, stdin)
+     p = subprocess.Popen(cmd_args, env=child_env, cwd=exe.workdir,
+                          close_fds=False, stdin=stdin, stdout=pipe, stderr=pipe)
+     stdout, stderr = p.communicate()
+@@ -98,6 +111,8 @@ def run_exe(exe: ExecutableSerialisation, extra_env: T.Optional[T.Dict[str, str]
+             with open(exe.capture, 'wb') as output:
+                 output.write(stdout)
+ 
++    print("run_exe done")
++    traceback.print_stack()
+     return 0
+ 
+ def run(args: T.List[str]) -> int:
+@@ -118,8 +133,12 @@ def run(args: T.List[str]) -> int:
+             exe.pickled = True
+     else:
+         exe = ExecutableSerialisation(cmd_args, capture=options.capture, feed=options.feed)
+-
++    traceback.print_stack()
+     return run_exe(exe)
+ 
+ if __name__ == '__main__':
+-    sys.exit(run(sys.argv[1:]))
++    try:
++        sys.exit(run(sys.argv[1:]))
++    except BaseException as e:
++        print(e)
++        raise
