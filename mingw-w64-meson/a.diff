@@ -120,3 +120,31 @@ index 486c101a1..0b62636ea 100644
 +    except BaseException as e:
 +        print(e)
 +        raise
+diff --git a/mesonbuild/scripts/symbolextractor.py b/mesonbuild/scripts/symbolextractor.py
+index 8f61ad495..ec17782c9 100644
+--- a/mesonbuild/scripts/symbolextractor.py
++++ b/mesonbuild/scripts/symbolextractor.py
+@@ -26,6 +26,7 @@ from .. import mesonlib
+ from .. import mlog
+ from ..mesonlib import Popen_safe
+ import argparse
++import traceback
+ 
+ parser = argparse.ArgumentParser()
+ 
+@@ -314,6 +315,7 @@ def gen_symbols(libfilename: str, impfilename: str, outfilename: str, cross_host
+             with open(TOOL_WARNING_FILE, 'w', encoding='utf-8'):
+                 pass
+         dummy_syms(outfilename)
++    traceback.print_stack()
+ 
+ def run(args: T.List[str]) -> int:
+     global TOOL_WARNING_FILE
+@@ -327,6 +329,7 @@ def run(args: T.List[str]) -> int:
+     impfile = options.args[2] # Only used on Windows
+     outfile = options.args[3]
+     gen_symbols(libfile, impfile, outfile, options.cross_host)
++    traceback.print_stack()
+     return 0
+ 
+ if __name__ == '__main__':
