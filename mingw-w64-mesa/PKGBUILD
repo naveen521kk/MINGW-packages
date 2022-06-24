@@ -135,6 +135,7 @@ build() {
      --force-fallback-for=llvm"
   fi
 
+  MSYSTEM="" \
   MSYS2_ARG_CONV_EXCL="--prefix=" \
   PROCESSOR_ARCHITECTURE="${CARCH}" ${buildconf} \
   -Dc_args='-march=core2 -pipe' \
@@ -142,7 +143,7 @@ build() {
   -Dc_link_args='-s' \
   -Dcpp_link_args='-s'
 
-  meson compile -C ./build/windows-${_mach}
+  MSYSTEM="" meson compile -C ./build/windows-${_mach}
 }
 
 package() {
