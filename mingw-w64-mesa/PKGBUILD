@@ -104,6 +104,7 @@ build() {
   export PYTHONUTF8=1
   export PYTHONDEVMODE=1
   export PYTHONUNBUFFERED=1
+  export PYTHONTRACEMALLOC=1
 
   buildconf="${MINGW_PREFIX}/bin/meson ./build/windows-${_mach}
   --prefix=${MINGW_PREFIX}
