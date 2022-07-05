@@ -6,8 +6,8 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
 provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
-pkgver=2.1.1
-pkgrel=2
+pkgver=3.0.1
+pkgrel=1
 pkgdesc="Namespace control and lazy-import mechanism (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
@@ -18,7 +18,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools"
              "${MINGW_PACKAGE_PREFIX}-python-setuptools-scm")
 options=('staticlibs' 'strip' '!debug')
 source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('cca34022414a13976e33a1e38d6a090567ef7b68d0372f923c699a8f8c088afc')
+sha256sums=('f8c021adafc9132ac2fba9fd3c5768365d0a8c10aa375fb15e329f1fce8a5f01')
 
 prepare() {
   rm -rf python-build-${MSYSTEM} | true
