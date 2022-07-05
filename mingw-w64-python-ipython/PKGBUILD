@@ -6,8 +6,8 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
 provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
 replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
-pkgver=7.33.0
-pkgrel=3
+pkgver=8.4.0
+pkgrel=1
 pkgdesc="An enhanced Interactive Python shell (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
@@ -24,6 +24,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-python-backcall"
          "${MINGW_PACKAGE_PREFIX}-python-prompt_toolkit"
          "${MINGW_PACKAGE_PREFIX}-python-pygments"
          "${MINGW_PACKAGE_PREFIX}-python-setuptools"
+         "${MINGW_PACKAGE_PREFIX}-python-stack-data"
          "${MINGW_PACKAGE_PREFIX}-python-traitlets"
          "${MINGW_PACKAGE_PREFIX}-sqlite3"
          "winpty")
@@ -39,7 +40,7 @@ checkdepends=("${MINGW_PACKAGE_PREFIX}-python-requests"
               "${MINGW_PACKAGE_PREFIX}-python-ipykernel"
               "${MINGW_PACKAGE_PREFIX}-python-numpy")
 source=("${_realname}-${pkgver}.tar.gz::https://github.com/ipython/ipython/archive/${pkgver}.tar.gz")
-sha256sums=('1bde14dfd2dea04414e2ee6cd4ccde59691f4d51d70284369da09bbf7d5878c1')
+sha256sums=('544c25cd589bc2ed3a2474c3fef858ff1e33ff2e96d57d0aadac9e284b23e342')
 
 prepare() {
   cd "${srcdir}"
