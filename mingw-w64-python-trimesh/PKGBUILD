@@ -3,21 +3,20 @@
 _realname=trimesh
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=3.9.36
-pkgrel=2
+pkgver=3.12.7
+pkgrel=1
 pkgdesc='Trimesh is a pure Python (2.7-3.4+) library for loading and using triangular meshes with an emphasis on watertight surfaces. (mingw-w64)'
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url="https://github.com/mikedh/trimesh"
 license=('MIT')
-depends=("${MINGW_PACKAGE_PREFIX}-python-numpy"
-         "${MINGW_PACKAGE_PREFIX}-python-setuptools")
+depends=("${MINGW_PACKAGE_PREFIX}-python-numpy")
 makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools")
 optdepends=("${MINGW_PACKAGE_PREFIX}-python-networkx: graph operations"
 "${MINGW_PACKAGE_PREFIX}-python-scipy: convex hulls"
 "${MINGW_PACKAGE_PREFIX}-python-pyglet: preview windows")
 source=("https://files.pythonhosted.org/packages/source/${_realname::1}/$_realname/$_realname-$pkgver.tar.gz")
-sha256sums=('f01e8edab14d1999700c980c21a1546f37417216ad915a53be649d263130181e')
+sha256sums=('4b1bafd1035c44b5679d3845c6f0d027ca55dab8607580a5eced76a3f5096d42')
 
 prepare() {  
   cd "$srcdir"
