@@ -189,7 +189,8 @@ source=("https://www.python.org/ftp/python/${pkgver%rc?}/Python-${pkgver}.tar.xz
         0139-Commit-regenerated-importlib.patch
         0140-fixup-cygpty-isatty.patch
         0141-Fix-failing-tests.patch
-        0142-distutils-add-build-root-to-libdirs-when-building-un.patch)
+        0142-distutils-add-build-root-to-libdirs-when-building-un.patch
+        test.patch)
 
 # Helper macros to help make tasks easier #
 apply_patch_with_msg() {
@@ -344,7 +345,8 @@ prepare() {
   0139-Commit-regenerated-importlib.patch \
   0140-fixup-cygpty-isatty.patch \
   0141-Fix-failing-tests.patch \
-  0142-distutils-add-build-root-to-libdirs-when-building-un.patch
+  0142-distutils-add-build-root-to-libdirs-when-building-un.patch \
+  test.patch
  
   autoreconf -vfi
 }
@@ -581,4 +583,5 @@ sha256sums=('8437efd5b106ef0a75aabfbf23d880625120a73a86a22ade4d2e2e68d7b74486'
             '2ffd218b1e4b20e70e21f880f7949e5f7b811ffdd3d1897880c7f5221737dc3b'
             '88420b76eb5fabf6062bd2af390a51bf5c392cbeb84e8cbc8232d6fa11c4cd42'
             '71ead9b8932aee75793e3e3e168bcb2dd5996933510156719325c47158b179a4'
-            '674d5111a7fde354a238b97676ac617b2896693c205813590129d88cd933e743')
+            '674d5111a7fde354a238b97676ac617b2896693c205813590129d88cd933e743'
+            'ef4ed8c47dbd4eb81a22683e90cb0eea193ab74394a2a450fd970fbe06de9a84')
