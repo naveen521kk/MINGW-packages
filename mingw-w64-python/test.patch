@@ -7,7 +7,7 @@ index 6607762..29e6316 100644
      else
          sts = 0;
 -
-+    printf("test before is_cygpty\n");
++    fprintf(stderr, "test before is_cygpty\n");
      if (inspect && (isatty((int)fileno(stdin)) || is_cygpty((int)fileno(stdin))))
          sts = PyRun_AnyFile(stdin, "<stdin>") != 0;
  
