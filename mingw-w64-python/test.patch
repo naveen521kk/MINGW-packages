@@ -1,15 +1,18 @@
 diff --git a/Python/pythonrun.c b/Python/pythonrun.c
-index 0f1794a..430d518 100644
+index 0f1794a..74b4091 100644
 --- a/Python/pythonrun.c
 +++ b/Python/pythonrun.c
-@@ -453,8 +453,10 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
+@@ -453,8 +453,13 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
              ret = -1;
              goto done;
          }
-+        fprintf(stdout, "Before running the file, at Python/pythonrun.c:%d\n", __LINE__);
++        FILE* f_log;
++        f_log = fopen("C:\\python_mingw.log", "w");
++        fprintf(f_log, "Before running the file, at Python/pythonrun.c:%d\n", __LINE__);
          v = pyrun_file(fp, filename, Py_file_input, d, d,
                         closeit, flags);
-+        fprintf(stdout, "After running the file, at Python/pythonrun.c:%d\n", __LINE__);
++        fprintf(f_log, "After running the file, at Python/pythonrun.c:%d\n", __LINE__);
++        fclose(f_log);
      }
      flush_io();
      if (v == NULL) {

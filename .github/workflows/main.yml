@@ -86,6 +86,13 @@ jobs:
           name: ${{ matrix.msystem }}-packages
           path: C:/_/artifacts/*.pkg.tar.*
 
+      - name: "Upload Logs"
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: logs
+          path: C:/python_mingw.log
+
       - name: "Clean up runner"
         if: ${{ always() }}
         continue-on-error: true
