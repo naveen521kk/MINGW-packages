@@ -345,8 +345,8 @@ prepare() {
   0139-Commit-regenerated-importlib.patch \
   0140-fixup-cygpty-isatty.patch \
   0141-Fix-failing-tests.patch \
-  0142-distutils-add-build-root-to-libdirs-when-building-un.patch
-  # test.patch
+  0142-distutils-add-build-root-to-libdirs-when-building-un.patch \
+  test.patch
  
   autoreconf -vfi
 }
