@@ -7,7 +7,7 @@ index 0f1794a..74b4091 100644
              goto done;
          }
 +        FILE* f_log;
-+        f_log = fopen("C:\\python_mingw.log", "w");
++        f_log = fopen("C:\\python_mingw.log", "a");
 +        fprintf(f_log, "Before running the file, at Python/pythonrun.c:%d\n", __LINE__);
          v = pyrun_file(fp, filename, Py_file_input, d, d,
                         closeit, flags);
