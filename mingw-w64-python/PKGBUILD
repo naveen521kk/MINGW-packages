@@ -362,9 +362,10 @@ build() {
   #   CXXFLAGS+=" -O0 -ggdb"
   #   _extra_config+=("--with-pydebug")
   # fi
-  CFLAGS+=" -O0 -ggdb"
-  CXXFLAGS+=" -O0 -ggdb"
+  #CFLAGS+=" -O0 -ggdb"
+  #CXXFLAGS+=" -O0 -ggdb"
   _extra_config+=("--with-pydebug")
+  _extra_config+=("--enable-optimizations")
 
   [[ -d "${srcdir}/build-${CARCH}" ]] && rm -rf "${srcdir}/build-${CARCH}"
   mkdir -p "${srcdir}/build-${CARCH}" && cd "${srcdir}/build-${CARCH}"
