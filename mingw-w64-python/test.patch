@@ -1,5 +1,5 @@
 diff --git a/Modules/main.c b/Modules/main.c
-index 9ee34a3..af7e9c3 100644
+index 9ee34a3..1403dfe 100644
 --- a/Modules/main.c
 +++ b/Modules/main.c
 @@ -685,6 +685,7 @@ Py_RunMain(void)
@@ -10,7 +10,7 @@ index 9ee34a3..af7e9c3 100644
      PyStatus status = pymain_init(args);
      if (_PyStatus_IS_EXIT(status)) {
          pymain_free();
-@@ -694,7 +695,36 @@ pymain_main(_PyArgv *args)
+@@ -694,7 +695,37 @@ pymain_main(_PyArgv *args)
          pymain_exit_error(status);
      }
  
@@ -31,6 +31,7 @@ index 9ee34a3..af7e9c3 100644
 +            fprintf (f_log, "argv[%d]=%ls\n", j, (args->wchar_argv)[j]);
 +        }
 +      }
++    fprintf(f_log, "Current process Id: %ld\n", GetCurrentProcessId ());
 +    fclose(f_log);
 +
 +    ret = Py_RunMain ();
@@ -49,27 +50,33 @@ index 9ee34a3..af7e9c3 100644
  
  
 diff --git a/Python/pythonrun.c b/Python/pythonrun.c
-index 0f1794a..704e989 100644
+index 0f1794a..23b2ec9 100644
 --- a/Python/pythonrun.c
 +++ b/Python/pythonrun.c
-@@ -87,7 +87,20 @@ _PyRun_AnyFileObject(FILE *fp, PyObject *filename, int closeit,
-         }
+@@ -462,7 +462,25 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
+         PyErr_Print();
+         goto done;
      }
-     else {
-+        FILE* f_log;
-+        f_log = fopen("C:\\python_mingw.log", "a");
-+        if (f_log == NULL)
-+        {
-+            perror ("Oh Well");
-+            return 1;
-+        }
-+        fprintf(f_log, "Before _PyRun_SimpleFileObject in %s (%s:%d)\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+-    Py_DECREF(v);
 +
-         res = _PyRun_SimpleFileObject(fp, filename, closeit, flags);
++    FILE *f_log;
++    f_log = fopen ("C:\\python_mingw.log", "a");
++    if (f_log == NULL)
++      {
++        perror ("Oh Well");
++        return 1;
++      }
++    fprintf (f_log, "Before Py_DECREF in %s (%s:%d) - pid: %ld\n",
++             __PRETTY_FUNCTION__, __FILE__, __LINE__, GetCurrentProcessId ());
++    fprintf (f_log, "'v' reference count: %ld - pid: %ld\n", v->ob_refcnt,
++             GetCurrentProcessId ());
 +
-+        fprintf(f_log, "After _PyRun_SimpleFileObject in %s (%s:%d)\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
-+        fprintf(f_log, "_PyRun_SimpleFileObject returned: %d\n", res);
-+        fclose(f_log);
-     }
- 
-     if (decref_filename) {
++    Py_DECREF (v);
++
++    fprintf (f_log, "After Py_DECREF in %s (%s:%d) - pid: %ld\n",
++             __PRETTY_FUNCTION__, __FILE__, __LINE__, GetCurrentProcessId ());
++    fclose (f_log);
++
+     ret = 0;
+   done:
+     if (set_file_name) {
