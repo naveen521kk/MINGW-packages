@@ -49,7 +49,7 @@ index 9ee34a3..af7e9c3 100644
  
  
 diff --git a/Python/pythonrun.c b/Python/pythonrun.c
-index 0f1794a..633b721 100644
+index 0f1794a..4926bea 100644
 --- a/Python/pythonrun.c
 +++ b/Python/pythonrun.c
 @@ -456,7 +456,17 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
@@ -60,7 +60,7 @@ index 0f1794a..633b721 100644
 +    FILE* f_log;
 +    f_log = fopen("C:\\python_mingw.log", "a");
 +    fprintf(f_log, "Before running flush_io, at Python/pythonrun.c:%d\n", __LINE__);
-+    fprintf(f_log, "File name is: %s\n", PyUnicode_AsWideCharString(filename, NULL));
++    fprintf(f_log, "File name is: %ls\n", PyUnicode_AsWideCharString(filename, NULL));
 +
      flush_io();
 +
