@@ -50,39 +50,29 @@ index 9ee34a3..cff1211 100644
  
  
 diff --git a/Python/pythonrun.c b/Python/pythonrun.c
-index 0f1794a..cda6651 100644
+index 0f1794a..6841922 100644
 --- a/Python/pythonrun.c
 +++ b/Python/pythonrun.c
-@@ -453,8 +453,22 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
-             ret = -1;
-             goto done;
-         }
-+        FILE *f_log;
-+        f_log = fopen ("C:\\python_mingw.log", "a");
-+        if (f_log == NULL)
-+          {
-+            perror ("Oh Well");
-+            return 1;
-+          }
-+        fprintf (f_log, "Before pyrun_file in %s (%s:%d) - pid: %ld\n",
-+                 __PRETTY_FUNCTION__, __FILE__, __LINE__,
-+                 GetCurrentProcessId ());
+@@ -456,7 +456,22 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
          v = pyrun_file(fp, filename, Py_file_input, d, d,
                         closeit, flags);
-+        fprintf (f_log, "After pyrun_file in %s (%s:%d) - pid: %ld\n",
-+                 __PRETTY_FUNCTION__, __FILE__, __LINE__,
-+                 GetCurrentProcessId ());
-+        fclose (f_log);
      }
-     flush_io();
-     if (v == NULL) {
-@@ -462,7 +476,8 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
-         PyErr_Print();
-         goto done;
-     }
--    Py_DECREF(v);
++    FILE *f_log;
++    f_log = fopen ("C:\\python_mingw.log", "a");
++    if (f_log == NULL)
++      {
++        perror ("Oh Well");
++        return 1;
++      }
++    fprintf (f_log, "Before flush_io in %s (%s:%d) - pid: %ld\n",
++             __PRETTY_FUNCTION__, __FILE__, __LINE__, GetCurrentProcessId ());
 +
-+    Py_DECREF (v);
-     ret = 0;
-   done:
-     if (set_file_name) {
+     flush_io();
++
++    fprintf (f_log, "After flush_io in %s (%s:%d) - pid: %ld\n",
++             __PRETTY_FUNCTION__, __FILE__, __LINE__, GetCurrentProcessId ());
++    fclose (f_log);
++
+     if (v == NULL) {
+         Py_CLEAR(m);
+         PyErr_Print();
