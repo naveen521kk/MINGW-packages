@@ -50,14 +50,13 @@ index 9ee34a3..cff1211 100644
  
  
 diff --git a/Python/pythonrun.c b/Python/pythonrun.c
-index 0f1794a..c9e89b7 100644
+index 0f1794a..3746b82 100644
 --- a/Python/pythonrun.c
 +++ b/Python/pythonrun.c
-@@ -457,11 +457,30 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
+@@ -456,12 +456,38 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
+         v = pyrun_file(fp, filename, Py_file_input, d, d,
                         closeit, flags);
      }
-     flush_io();
-+
 +    FILE *f_log;
 +    f_log = fopen ("C:\\python_mingw.log", "a");
 +    if (f_log == NULL)
@@ -65,9 +64,18 @@ index 0f1794a..c9e89b7 100644
 +        perror ("Oh Well");
 +        return 1;
 +      }
-+    fprintf (f_log, "Before v == NULL check in %s (%s:%d) - pid: %ld\n",
++
++    fprintf (f_log, "Before flush_io check in %s (%s:%d) - pid: %ld\n",
 +             __PRETTY_FUNCTION__, __FILE__, __LINE__, GetCurrentProcessId ());
 +
++
+     flush_io();
++
++
++    fprintf (f_log, "After flush_io check in %s (%s:%d) - pid: %ld\n",
++             __PRETTY_FUNCTION__, __FILE__, __LINE__, GetCurrentProcessId ());
++    fprintf (f_log, "Before v == NULL check in %s (%s:%d) - pid: %ld\n",
++             __PRETTY_FUNCTION__, __FILE__, __LINE__, GetCurrentProcessId ());
 +
      if (v == NULL) {
          Py_CLEAR(m);
