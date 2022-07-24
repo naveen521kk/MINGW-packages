@@ -49,24 +49,27 @@ index 9ee34a3..af7e9c3 100644
  
  
 diff --git a/Python/pythonrun.c b/Python/pythonrun.c
-index 0f1794a..4926bea 100644
+index 0f1794a..704e989 100644
 --- a/Python/pythonrun.c
 +++ b/Python/pythonrun.c
-@@ -456,7 +456,17 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
-         v = pyrun_file(fp, filename, Py_file_input, d, d,
-                        closeit, flags);
+@@ -87,7 +87,20 @@ _PyRun_AnyFileObject(FILE *fp, PyObject *filename, int closeit,
+         }
      }
+     else {
++        FILE* f_log;
++        f_log = fopen("C:\\python_mingw.log", "a");
++        if (f_log == NULL)
++        {
++            perror ("Oh Well");
++            return 1;
++        }
++        fprintf(f_log, "Before _PyRun_SimpleFileObject in %s (%s:%d)\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
 +
-+    FILE* f_log;
-+    f_log = fopen("C:\\python_mingw.log", "a");
-+    fprintf(f_log, "Before running flush_io, at Python/pythonrun.c:%d\n", __LINE__);
-+    fprintf(f_log, "File name is: %ls\n", PyUnicode_AsWideCharString(filename, NULL));
+         res = _PyRun_SimpleFileObject(fp, filename, closeit, flags);
 +
-     flush_io();
-+
-+    fprintf(f_log, "After running the flush_io, at Python/pythonrun.c:%d\n", __LINE__);
-+    fclose(f_log);
-+
-     if (v == NULL) {
-         Py_CLEAR(m);
-         PyErr_Print();
++        fprintf(f_log, "After _PyRun_SimpleFileObject in %s (%s:%d)\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
++        fprintf(f_log, "_PyRun_SimpleFileObject returned: %d\n", res);
++        fclose(f_log);
+     }
+ 
+     if (decref_filename) {
