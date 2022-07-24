@@ -353,19 +353,15 @@ prepare() {
 
 build() {
   declare -a _extra_config
-  # if check_option "debug" "n"; then
-  #   _extra_config+=("--enable-optimizations")
-  #   # FIXME: https://github.com/msys2-contrib/cpython-mingw/issues/10
-  #   # _extra_config+=("--with-lto")
-  # else
-  #   CFLAGS+=" -O0 -ggdb"
-  #   CXXFLAGS+=" -O0 -ggdb"
-  #   _extra_config+=("--with-pydebug")
-  # fi
-  #CFLAGS+=" -O0 -ggdb"
-  #CXXFLAGS+=" -O0 -ggdb"
-  _extra_config+=("--with-pydebug")
-  _extra_config+=("--enable-optimizations")
+  if check_option "debug" "n"; then
+    _extra_config+=("--enable-optimizations")
+    # FIXME: https://github.com/msys2-contrib/cpython-mingw/issues/10
+    # _extra_config+=("--with-lto")
+  else
+    CFLAGS+=" -O0 -ggdb"
+    CXXFLAGS+=" -O0 -ggdb"
+    _extra_config+=("--with-pydebug")
+  fi
 
   [[ -d "${srcdir}/build-${CARCH}" ]] && rm -rf "${srcdir}/build-${CARCH}"
   mkdir -p "${srcdir}/build-${CARCH}" && cd "${srcdir}/build-${CARCH}"
