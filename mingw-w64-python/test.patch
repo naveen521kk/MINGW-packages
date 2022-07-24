@@ -1,5 +1,5 @@
 diff --git a/Modules/main.c b/Modules/main.c
-index 9ee34a3..770cbbb 100644
+index 9ee34a3..af7e9c3 100644
 --- a/Modules/main.c
 +++ b/Modules/main.c
 @@ -685,6 +685,7 @@ Py_RunMain(void)
@@ -10,7 +10,7 @@ index 9ee34a3..770cbbb 100644
      PyStatus status = pymain_init(args);
      if (_PyStatus_IS_EXIT(status)) {
          pymain_free();
-@@ -694,7 +695,28 @@ pymain_main(_PyArgv *args)
+@@ -694,7 +695,36 @@ pymain_main(_PyArgv *args)
          pymain_exit_error(status);
      }
  
@@ -31,9 +31,17 @@ index 9ee34a3..770cbbb 100644
 +            fprintf (f_log, "argv[%d]=%ls\n", j, (args->wchar_argv)[j]);
 +        }
 +      }
++    fclose(f_log);
++
 +    ret = Py_RunMain ();
-+    fprintf (f_log, "Exiting with code: %d\n\n", ret);
-+    fprintf (f_log, "\n\n\n\n");
++
++    f_log = fopen ("C:\\python_mingw.log", "a");
++    if (f_log == NULL)
++      {
++        perror ("Oh Well");
++        return 1;
++      }
++    fprintf (f_log, "Exiting with code: %d\n\n\n\n", ret);
 +    fclose (f_log);
 +
 +    return ret;
@@ -41,20 +49,24 @@ index 9ee34a3..770cbbb 100644
  
  
 diff --git a/Python/pythonrun.c b/Python/pythonrun.c
-index 0f1794a..0a35759 100644
+index 0f1794a..633b721 100644
 --- a/Python/pythonrun.c
 +++ b/Python/pythonrun.c
-@@ -453,8 +453,13 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
-             ret = -1;
-             goto done;
-         }
-+        FILE* f_log;
-+        f_log = fopen("C:\\python_mingw.log", "a");
-+        fprintf(f_log, "Before running the file, at Python/pythonrun.c:%d\n", __LINE__);
+@@ -456,7 +456,17 @@ _PyRun_SimpleFileObject(FILE *fp, PyObject *filename, int closeit,
          v = pyrun_file(fp, filename, Py_file_input, d, d,
                         closeit, flags);
-+        fprintf(f_log, "After running the file, at Python/pythonrun.c:%d\n", __LINE__);
-+        fclose(f_log);
      }
++
++    FILE* f_log;
++    f_log = fopen("C:\\python_mingw.log", "a");
++    fprintf(f_log, "Before running flush_io, at Python/pythonrun.c:%d\n", __LINE__);
++    fprintf(f_log, "File name is: %s\n", PyUnicode_AsWideCharString(filename, NULL));
++
      flush_io();
++
++    fprintf(f_log, "After running the flush_io, at Python/pythonrun.c:%d\n", __LINE__);
++    fclose(f_log);
++
      if (v == NULL) {
+         Py_CLEAR(m);
+         PyErr_Print();
